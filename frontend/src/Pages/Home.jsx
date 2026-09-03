@@ -1,0 +1,415 @@
+import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { FaInstagram, FaWhatsapp } from 'react-icons/fa'
+import { FaChevronRight } from 'react-icons/fa6'
+import InfiniteSpiral from '../components/InfiniteSpiral'
+
+const heroImageMobile = '/hero-barber.jpg'
+const heroImageDesktop = '/hero-barber-pc.png'
+const revealProps = {
+  initial: { opacity: 0, y: 34 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.35 },
+  transition: { duration: 1.25, ease: [0.22, 1, 0.36, 1] },
+}
+
+const images = [
+  { src: '/galery/1.jpg', alt: 'Muhammed Barbers sac kesimi' },
+  { src: '/galery/2.jfif', alt: 'Muhammed Barbers sakal tirasi' },
+  { src: '/galery/3.jfif', alt: 'Muhammed Barbers salon detayi' },
+  { src: '/galery/4.jfif', alt: 'Cankiri Merkez berber hizmeti' },
+  { src: '/galery/5.jfif', alt: 'Modern erkek kuaforu' },
+  { src: '/galery/6.jfif', alt: 'Profesyonel berber isciligi' },
+  { src: '/galery/7.jfif', alt: 'Cankiri Merkez berber hizmeti' },
+  { src: '/galery/8.jfif', alt: 'Modern erkek kuaforu' },
+  { src: '/galery/6.jfif', alt: 'Profesyonel berber isciligi' },
+]
+
+const reviews = [
+  {
+    name: 'Emir K.',
+    text: 'Sac kesimi de sakal da tam istedigim gibi oldu. Koltuktan kalkinca farki direkt hissediyorsun.',
+  },
+  {
+    name: 'Burak A.',
+    text: 'Cankiri Merkezde gittigim en temiz ve en rahat berber deneyimlerinden biri.',
+  },
+  {
+    name: 'Mert Y.',
+    text: 'Detaylara cok dikkat ediyorlar. Randevu saatinde alindim, sonuc gercekten iyi.',
+  },
+  {
+    name: 'Caner D.',
+    text: 'Salonun enerjisi cok iyi. Hem sohbet hem iscilik ayni seviyede kaliteli.',
+  },
+  {
+    name: 'Ahmet S.',
+    text: 'Fade kesimde net cizgi ve temiz bitis istiyorsan adres belli.',
+  },
+  {
+    name: 'Yusuf T.',
+    text: 'Sakal toparlama cok basariliydi. Yuz sekline gore calisiyorlar.',
+  },
+  {
+    name: 'Ozan B.',
+    text: 'Ilk kez gittim, artik randevumu buradan alirim. Cok temiz is.',
+  },
+  {
+    name: 'Kadir E.',
+    text: 'Cankirida modern berber deneyimi arayanlara rahatlikla oneririm.',
+  },
+  {
+    name: 'Furkan G.',
+    text: 'Detaylara takilan biri olarak soyluyorum, sonuc gercekten pismedi.',
+  },
+  {
+    name: 'Enes R.',
+    text: 'Hem hizli hem ozenli. En guzel tarafi da ne istedigini iyi anlamalari.',
+  },
+  {
+    name: 'Berk N.',
+    text: 'Fotografta gosterdigim modeli birebir yakaladilar. Elinize saglik.',
+  },
+  {
+    name: 'Alihan M.',
+    text: 'Koltuga oturunca isi bilen birine geldigin belli oluyor.',
+  },
+]
+const reviewRows = [reviews.slice(0, 6), reviews.slice(6)]
+const services = [
+  { name: 'Sac kesimi', price: '350 TL', detail: 'Klasik, modern ve fade kesim' },
+  { name: 'Sakal tirasi', price: '200 TL', detail: 'Hat belirleme ve sicak havlu' },
+  { name: 'Sac + sakal', price: '500 TL', detail: 'Tam bakim paketi' },
+  { name: 'Cocuk kesimi', price: '250 TL', detail: 'Rahat ve hizli kesim' },
+  { name: 'Damat bakimi', price: '900 TL', detail: 'Ozel gun hazirligi' },
+]
+
+function CountUp({ end, suffix = '', prefix = '' }) {
+  const [value, setValue] = useState(0)
+  const [hasStarted, setHasStarted] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const element = ref.current
+
+    if (!element) {
+      return undefined
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasStarted(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.35 },
+    )
+
+    observer.observe(element)
+
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!hasStarted) {
+      return undefined
+    }
+
+    let frameId
+    const duration = 1400
+    const startTime = performance.now()
+
+    const animate = (currentTime) => {
+      const progress = Math.min((currentTime - startTime) / duration, 1)
+      const easedProgress = 1 - (1 - progress) ** 3
+
+      setValue(Math.round(end * easedProgress))
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(animate)
+      }
+    }
+
+    frameId = requestAnimationFrame(animate)
+
+    return () => cancelAnimationFrame(frameId)
+  }, [end, hasStarted])
+
+  return (
+    <strong ref={ref}>
+      {prefix}
+      {value}
+      {suffix}
+    </strong>
+  )
+}
+
+function Home() {
+  return (
+    <main className="home-page">
+      <section className="hero-section">
+        <h1 className="mobile-hero-title">
+          <motion.span
+            className="hero-name"
+            initial={{ opacity: 0, y: 34 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 1.2, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          >
+            Muhammed
+          </motion.span>
+          <motion.span
+            className="hero-script"
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 1.2, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          >
+            Barbers
+          </motion.span>
+        </h1>
+        <div className="seo-content">
+          <h2>Muhammed Barbers Cankiri Merkez Berber</h2>
+          <p>
+            Muhammed Barbers, Cankiri Merkez'de erkek sac kesimi, sakal tirasi,
+            sac sekillendirme ve profesyonel berber hizmetleri sunar.
+          </p>
+        </div>
+        <picture>
+          <source media="(min-width: 641px)" srcSet={heroImageDesktop} />
+          <img className="hero-image" src={heroImageMobile} alt="Berber salonu" />
+        </picture>
+
+        <motion.div
+          className="mobile-hero-actions"
+          initial={{ opacity: 0, y: 42 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 1.25, delay: 0.85, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <a className="scroll-down-link" href="#next-section" aria-label="Asagi kaydir">
+            <span>Asagi</span>
+            <i />
+          </a>
+
+          <div className="hero-status">
+            <span>Cankiri Merkez</span>
+          </div>
+
+          <div className="hero-cta-card">
+            <div>
+              <span>Siradaki kesim</span>
+              <strong>Senin stilin</strong>
+            </div>
+            <a className="primary-hero-action" href="/randevu" aria-label="Randevu al">
+              Randevu
+              <FaChevronRight aria-hidden="true" />
+            </a>
+          </div>
+
+          <div className="hero-bottom-row">
+            <a className="secondary-hero-action" href="/randevu-sorgula">
+              Randevu Sorgula
+            </a>
+            <div className="hero-socials" aria-label="Sosyal medya">
+              <a href="https://www.instagram.com/muhammed_barbers" aria-label="Instagram">
+                <FaInstagram />
+              </a>
+              <a href="https://wa.me/905388117868" aria-label="WhatsApp">
+                <FaWhatsapp />
+              </a>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      <section className="about-section" id="next-section">
+        <div className="about-content">
+          <motion.div className="about-copy" {...revealProps}>
+            <span className="section-kicker">Cankiri Merkez</span>
+            <h2>Muhammed Barbers</h2>
+            <p>
+              Modern erkek bakimini guclu stil, temiz iscilik ve rahat bir salon
+              deneyimiyle bulusturuyoruz.
+            </p>
+          </motion.div>
+
+          <div className="stats-grid">
+            <motion.div className="stat-item" {...revealProps} transition={{ ...revealProps.transition, delay: 0.25 }}>
+              <CountUp end={100} suffix="%" />
+              <span>Musteri memnuniyeti</span>
+            </motion.div>
+            <motion.div className="stat-item" {...revealProps} transition={{ ...revealProps.transition, delay: 0.6 }}>
+              <CountUp end={5} suffix="+" />
+              <span>Yillik deneyim</span>
+            </motion.div>
+            <motion.div className="stat-item" {...revealProps} transition={{ ...revealProps.transition, delay: 0.95 }}>
+              <CountUp end={1} suffix=":1" />
+              <span>Profesyonel hizmet</span>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+      <section className="gallery-section" id="galeri">
+        <div className="gallery-copy">
+          <motion.span
+            className="section-kicker"
+            initial={{ opacity: 0, y: 22 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.45 }}
+            transition={{ duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
+          >
+            Galeri
+          </motion.span>
+          <motion.h2
+            initial={{ opacity: 0, y: 34 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.45 }}
+            transition={{ duration: 1.25, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          >
+            Kesimden kalan izler
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 26 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.45 }}
+            transition={{ duration: 1.2, delay: 0.48, ease: [0.22, 1, 0.36, 1] }}
+          >
+            Salon atmosferinden detaylara, sac ve sakal isciligimizin siyah beyaz
+            kareleri burada akiyor.
+          </motion.p>
+        </div>
+
+        <motion.div
+          className="gallery-spiral"
+          initial={{ opacity: 0, y: 42 }}
+          whileInView={{ opacity: 0.72, y: 0 }}
+          viewport={{ once: true, amount: 0.18 }}
+          transition={{ duration: 1.35, delay: 0.72, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <InfiniteSpiral
+            items={images}
+            animationMode="auto"
+            speed={0.55}
+            radius={170}
+            cardWidth={100}
+            cardHeight={100}
+            verticalSpacing={60}
+            perspective={1000}
+            cardRadius={10}
+            centerScale={1.2}
+            edgeBlur={6}
+            cardsPerTurn={7}
+            pauseOnHover
+            direction="up"
+            rotation={0}
+            cardTilt={0}
+            edgeFade={0.3}
+            imageFit="cover"
+            grayscale={1}
+          />
+        </motion.div>
+      </section>
+
+      <section className="reviews-section" id="yorumlar">
+        <div className="reviews-heading">
+          <motion.span
+            className="section-kicker"
+            initial={{ opacity: 0, y: 22 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.45 }}
+            transition={{ duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
+          >
+            Yorumlar
+          </motion.span>
+          <motion.h2
+            initial={{ opacity: 0, y: 34 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.45 }}
+            transition={{ duration: 1.25, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          >
+            Koltugu birakmak istemeyenler
+          </motion.h2>
+        </div>
+
+        <motion.div className="reviews-marquee" {...revealProps} transition={{ ...revealProps.transition, delay: 0.45 }}>
+          {reviewRows.map((row, rowIndex) => (
+            <div className={`reviews-track ${rowIndex === 1 ? 'is-reverse' : ''}`} key={rowIndex}>
+              {[...row, ...row].map((review, index) => (
+                <article className="review-card" key={`${review.name}-${index}`}>
+                  <div className="review-card-top">
+                    <span>{String((index % row.length) + 1).padStart(2, '0')}</span>
+                    <i>MB</i>
+                  </div>
+                  <p>{review.text}</p>
+                  <strong>{review.name}</strong>
+                </article>
+              ))}
+            </div>
+          ))}
+        </motion.div>
+      </section>
+
+      <section className="booking-section" id="randevu-al">
+        <div className="booking-content">
+          <div className="booking-heading">
+            <motion.span
+              className="section-kicker"
+              initial={{ opacity: 0, y: 22 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.45 }}
+              transition={{ duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
+            >
+              Randevu
+            </motion.span>
+            <motion.h2
+              initial={{ opacity: 0, y: 34 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.45 }}
+              transition={{ duration: 1.25, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            >
+              Koltugunu sec, stilini belirle
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 26 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.45 }}
+              transition={{ duration: 1.2, delay: 0.44, ease: [0.22, 1, 0.36, 1] }}
+            >
+              Yapilacak islemi sec, randevu sayfasinda sana uygun zamani tamamla.
+            </motion.p>
+          </div>
+
+          <div className="service-list">
+            {services.map((service, index) => (
+              <motion.a
+                className="service-card"
+                href="/randevu"
+                key={service.name}
+                initial={{ opacity: 0, y: 32 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.35 }}
+                transition={{
+                  duration: 1.15,
+                  delay: 0.16 + index * 0.14,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                <span>{String(index + 1).padStart(2, '0')}</span>
+                <div>
+                  <strong>{service.name}</strong>
+                  <p>{service.detail}</p>
+                </div>
+                <b>{service.price}</b>
+                <FaChevronRight aria-hidden="true" />
+              </motion.a>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+  )
+}
+
+export default Home

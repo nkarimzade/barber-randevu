@@ -1,0 +1,90 @@
+.infinite-spiral {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.infinite-spiral__stage {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.infinite-spiral__item {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: var(--infinite-spiral-card-width);
+  height: var(--infinite-spiral-card-height);
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.24);
+  border-radius: var(--infinite-spiral-card-radius);
+  background: rgb(255 255 255 / 0.08);
+  box-shadow: 0 14px 38px rgb(8 6 18 / 0.2);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
+  text-decoration: none;
+  cursor: zoom-in;
+}
+
+.infinite-spiral__image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-position: center;
+  user-select: none;
+}
+
+.spiral-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.88);
+  cursor: zoom-out;
+}
+
+.spiral-lightbox__image {
+  max-width: min(920px, 92vw);
+  max-height: 86vh;
+  display: block;
+  border-radius: 10px;
+  filter: grayscale(1);
+  object-fit: contain;
+  box-shadow: 0 24px 80px rgb(0 0 0 / 0.5);
+}
+
+.spiral-lightbox__close {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  z-index: 101;
+  width: 46px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.72);
+  color: #ffffff;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .infinite-spiral__item {
+    transition: none;
+  }
+}
