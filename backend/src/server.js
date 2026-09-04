@@ -689,6 +689,6 @@ const server = http.createServer((request, response) => {
   })
 })
 
-server.listen(port, () => {
-  console.log(`Backend running on http://localhost:${port}`)
+server.listen(port, '0.0.0.0', () => {
+  console.log(`Backend running on http://0.0.0.0:${port}`)
 })

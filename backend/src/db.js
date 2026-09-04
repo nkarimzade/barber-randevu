@@ -1,5 +1,5 @@
 import admin from 'firebase-admin'
-import { readFileSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
 import path from 'node:path'
 
 const defaultServices = [
@@ -17,13 +17,30 @@ const defaultServices = [
 ]
 
 function getCredential() {
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
-    const serviceAccountPath = path.resolve(process.cwd(), process.env.FIREBASE_SERVICE_ACCOUNT_PATH)
-    return admin.credential.cert(JSON.parse(readFileSync(serviceAccountPath, 'utf8')))
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    try {
+      return admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
+    } catch (e) {
+      console.error('FIREBASE_SERVICE_ACCOUNT JSON parse hatasi:', e.message)
+    }
   }
 
-  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    return admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
+  const possiblePaths = [
+    process.env.FIREBASE_SERVICE_ACCOUNT_PATH,
+    '/etc/secrets/service-account.json',
+    path.resolve(process.cwd(), 'service-account.json'),
+    path.resolve(process.cwd(), 'backend', 'service-account.json'),
+  ].filter(Boolean)
+
+  for (const candidate of possiblePaths) {
+    try {
+      const resolved = path.resolve(process.cwd(), candidate)
+      if (existsSync(resolved)) {
+        return admin.credential.cert(JSON.parse(readFileSync(resolved, 'utf8')))
+      }
+    } catch (e) {
+      console.error(`Firebase credential okunamadi (${candidate}):`, e.message)
+    }
   }
 
   if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
@@ -34,6 +51,7 @@ function getCredential() {
     })
   }
 
+  console.warn('UYARI: Firebase credentials bulunamadi, applicationDefault deneniyor.')
   return admin.credential.applicationDefault()
 }
 
