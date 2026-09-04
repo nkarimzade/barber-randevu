@@ -7,6 +7,7 @@ import {
   FaCalendarDays,
   FaCalendarCheck,
   FaCheck,
+  FaCircleCheck,
   FaChartSimple,
   FaCircleExclamation,
   FaCircleInfo,
@@ -163,6 +164,31 @@ function Admin() {
   const [status, setStatus] = useState('')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isDashboardLoading, setIsDashboardLoading] = useState(false)
+  const [confirmModal, setConfirmModal] = useState(null)
+  const [isConfirmLoading, setIsConfirmLoading] = useState(false)
+  const [toast, setToast] = useState(null)
+
+  const showToast = useCallback((type, message) => {
+    setToast({ type, message })
+  }, [])
+
+  useEffect(() => {
+    if (!toast) return undefined
+    const timer = setTimeout(() => {
+      setToast(null)
+    }, 3800)
+    return () => clearTimeout(timer)
+  }, [toast])
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && confirmModal && !isConfirmLoading) {
+        setConfirmModal(null)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [confirmModal, isConfirmLoading])
 
   const isAuthenticated = Boolean(token)
   const authHeaders = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token])
@@ -345,28 +371,41 @@ function Admin() {
     }
   }
 
-  const openClosedDay = async (date) => {
-    if (!window.confirm(`${date} tarihli günün kapalılığını kaldırmak istediğinize emin misiniz?`)) return
-    setStatus('Gün açılıyor...')
+  const openClosedDay = (date) => {
+    setConfirmModal({
+      title: 'Günü Randevuya Aç',
+      subtitle: `${date} tarihli günün randevu engelini kaldırmak istediğinize emin misiniz?`,
+      itemName: `${date} Tarihli Gün`,
+      warning: 'Bu gün tekrar müşteriler tarafından randevu alınabilir hale gelecektir.',
+      confirmText: 'Evet, Günü Aç',
+      confirmVariant: 'primary',
+      onConfirm: async () => {
+        setIsConfirmLoading(true)
+        setStatus('Gün açılıyor...')
 
-    try {
-      const response = await fetch(`${apiBaseUrl}/api/admin/closed-days/${date}`, {
-        method: 'DELETE',
-        headers: authHeaders,
-      })
+        try {
+          const response = await fetch(`${apiBaseUrl}/api/admin/closed-days/${date}`, {
+            method: 'DELETE',
+            headers: authHeaders,
+          })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || 'Gün açılamadı.')
-      }
+          if (!response.ok) {
+            const data = await response.json()
+            throw new Error(data.message || 'Gün açılamadı.')
+          }
 
-      await loadDashboard()
-      setStatus('Gün tekrar açıldı.')
-      window.alert('Gün tekrar randevuya açıldı.')
-    } catch (error) {
-      setStatus(error.message)
-      window.alert(error.message || 'Gün açılamadı.')
-    }
+          await loadDashboard()
+          setStatus('Gün tekrar açıldı.')
+          showToast('success', `${date} günü tekrar randevuya açıldı.`)
+          setConfirmModal(null)
+        } catch (error) {
+          setStatus(error.message)
+          showToast('error', error.message || 'Gün açılamadı.')
+        } finally {
+          setIsConfirmLoading(false)
+        }
+      },
+    })
   }
 
   const closeSelectedSlot = async (event) => {
@@ -396,28 +435,44 @@ function Admin() {
     }
   }
 
-  const openBlockedSlot = async (slotId) => {
-    if (!window.confirm('Bu saat engelini kaldırmak istediğinize emin misiniz?')) return
-    setStatus('Saat açılıyor...')
+  const openBlockedSlot = (slot) => {
+    const slotId = typeof slot === 'object' ? slot.id : slot
+    const slotLabel = typeof slot === 'object' && slot.time ? `${slot.date} • ${slot.time}` : 'Seçilen saat'
 
-    try {
-      const response = await fetch(`${apiBaseUrl}/api/admin/blocked-slots/${slotId}`, {
-        method: 'DELETE',
-        headers: authHeaders,
-      })
+    setConfirmModal({
+      title: 'Saat Engelini Kaldır',
+      subtitle: 'Bu saatin randevu engelini kaldırmak istediğinize emin misiniz?',
+      itemName: slotLabel,
+      warning: 'Bu saat dilimi tekrar müşteriler tarafından seçilebilir olacaktır.',
+      confirmText: 'Evet, Saati Aç',
+      confirmVariant: 'primary',
+      onConfirm: async () => {
+        setIsConfirmLoading(true)
+        setStatus('Saat açılıyor...')
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || 'Saat açılamadı.')
-      }
+        try {
+          const response = await fetch(`${apiBaseUrl}/api/admin/blocked-slots/${slotId}`, {
+            method: 'DELETE',
+            headers: authHeaders,
+          })
 
-      await loadDashboard()
-      setStatus('Saat tekrar açıldı.')
-      window.alert('Saat engeli kaldırıldı.')
-    } catch (error) {
-      setStatus(error.message)
-      window.alert(error.message || 'Saat açılamadı.')
-    }
+          if (!response.ok) {
+            const data = await response.json()
+            throw new Error(data.message || 'Saat açılamadı.')
+          }
+
+          await loadDashboard()
+          setStatus('Saat tekrar açıldı.')
+          showToast('success', 'Saat engeli başarıyla kaldırıldı.')
+          setConfirmModal(null)
+        } catch (error) {
+          setStatus(error.message)
+          showToast('error', error.message || 'Saat açılamadı.')
+        } finally {
+          setIsConfirmLoading(false)
+        }
+      },
+    })
   }
 
   const blockPhone = async (phone, note = '') => {
@@ -442,8 +497,10 @@ function Admin() {
       setBlockedPhoneNote('')
       await loadDashboard()
       setStatus('Numara engellendi.')
+      showToast('success', `${phone} başarıyla engellendi.`)
     } catch (error) {
       setStatus(error.message)
+      showToast('error', error.message || 'Numara engellenemedi.')
     }
   }
 
@@ -459,55 +516,92 @@ function Admin() {
     )
   }
 
-  const deleteSelectedAppointment = async (appointmentId) => {
-    if (!window.confirm('Bu randevuyu silmek istediğinize emin misiniz?')) return
-    setStatus('Randevu siliniyor...')
+  const deleteSelectedAppointment = (appointment) => {
+    const appointmentId = typeof appointment === 'object' ? appointment.id : appointment
+    const customerTitle =
+      typeof appointment === 'object'
+        ? `${appointment.customerName} (${appointment.customerPhone})`
+        : 'Seçilen Randevu'
+    const tags =
+      typeof appointment === 'object'
+        ? [appointment.date, appointment.time, appointment.serviceName].filter(Boolean)
+        : []
 
-    try {
-      const response = await fetch(`${apiBaseUrl}/api/admin/appointments/${appointmentId}`, {
-        method: 'DELETE',
-        headers: authHeaders,
-      })
+    setConfirmModal({
+      title: 'Randevuyu Sil',
+      subtitle: 'Bu randevuyu kalıcı olarak silmek istediğinize emin misiniz?',
+      itemName: customerTitle,
+      itemTags: tags,
+      warning: 'Bu işlem geri alınamaz. Randevu takvimden kalıcı olarak silinecektir.',
+      confirmText: 'Evet, Randevuyu Sil',
+      confirmVariant: 'danger',
+      onConfirm: async () => {
+        setIsConfirmLoading(true)
+        setStatus('Randevu siliniyor...')
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || 'Randevu silinemedi.')
-      }
+        try {
+          const response = await fetch(`${apiBaseUrl}/api/admin/appointments/${appointmentId}`, {
+            method: 'DELETE',
+            headers: authHeaders,
+          })
 
-      setDashboard((current) => ({
-        ...current,
-        appointments: current.appointments.filter((a) => a.id !== appointmentId),
-      }))
-      setStatus('Randevu silindi.')
-      window.alert('Randevu başarıyla silindi.')
-    } catch (error) {
-      setStatus(error.message)
-      window.alert(error.message || 'Randevu silinemedi.')
-    }
+          if (!response.ok) {
+            const data = await response.json()
+            throw new Error(data.message || 'Randevu silinemedi.')
+          }
+
+          setDashboard((current) => ({
+            ...current,
+            appointments: current.appointments.filter((a) => a.id !== appointmentId),
+          }))
+          setStatus('Randevu silindi.')
+          showToast('success', 'Randevu başarıyla silindi.')
+          setConfirmModal(null)
+        } catch (error) {
+          setStatus(error.message)
+          showToast('error', error.message || 'Randevu silinemedi.')
+        } finally {
+          setIsConfirmLoading(false)
+        }
+      },
+    })
   }
 
-  const unblockSelectedPhone = async (phone) => {
-    if (!window.confirm(`${phone} numarasının engelini kaldırmak istediğinize emin misiniz?`)) return
-    setStatus('Engel kaldırılıyor...')
+  const unblockSelectedPhone = (phone) => {
+    setConfirmModal({
+      title: 'Numara Engelini Kaldır',
+      subtitle: `${phone} numarasının engelini kaldırmak istediğinize emin misiniz?`,
+      itemName: phone,
+      warning: 'Bu numara sahibi yeniden online randevu oluşturabilecektir.',
+      confirmText: 'Evet, Engeli Kaldır',
+      confirmVariant: 'primary',
+      onConfirm: async () => {
+        setIsConfirmLoading(true)
+        setStatus('Engel kaldırılıyor...')
 
-    try {
-      const response = await fetch(`${apiBaseUrl}/api/admin/blocked-phones/${phone}`, {
-        method: 'DELETE',
-        headers: authHeaders,
-      })
+        try {
+          const response = await fetch(`${apiBaseUrl}/api/admin/blocked-phones/${phone}`, {
+            method: 'DELETE',
+            headers: authHeaders,
+          })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || 'Engel kaldırılamadı.')
-      }
+          if (!response.ok) {
+            const data = await response.json()
+            throw new Error(data.message || 'Engel kaldırılamadı.')
+          }
 
-      await loadDashboard()
-      setStatus('Numara engeli kaldırıldı.')
-      window.alert('Numara engeli başarıyla kaldırıldı.')
-    } catch (error) {
-      setStatus(error.message)
-      window.alert(error.message || 'Engel kaldırılamadı.')
-    }
+          await loadDashboard()
+          setStatus('Numara engeli kaldırıldı.')
+          showToast('success', `${phone} numarasının engeli kaldırıldı.`)
+          setConfirmModal(null)
+        } catch (error) {
+          setStatus(error.message)
+          showToast('error', error.message || 'Engel kaldırılamadı.')
+        } finally {
+          setIsConfirmLoading(false)
+        }
+      },
+    })
   }
 
   const downloadDailyPdf = async () => {
@@ -580,31 +674,51 @@ function Admin() {
     }
   }
 
-  const deleteSelectedService = async (serviceId) => {
-    if (!window.confirm('Bu işlemi silmek istediğinize emin misiniz?')) return
-    setStatus('İşlem siliniyor...')
+  const deleteSelectedService = (service) => {
+    const serviceObj =
+      typeof service === 'object'
+        ? service
+        : dashboard.services.find((s) => s.id === service) || { id: service, name: 'Hizmet' }
+    const serviceId = serviceObj.id
 
-    try {
-      const response = await fetch(`${apiBaseUrl}/api/admin/services/${serviceId}`, {
-        method: 'DELETE',
-        headers: authHeaders,
-      })
+    setConfirmModal({
+      title: 'İşlemi Sil',
+      subtitle: `"${serviceObj.name}" işlemini kalıcı olarak silmek istediğinize emin misiniz?`,
+      itemName: serviceObj.name,
+      itemTags: [serviceObj.price, serviceObj.time].filter(Boolean),
+      warning: 'Bu işlem geri alınamaz. Bu hizmet ana sayfadan ve randevu alma sisteminden tamamen kaldırılacaktır.',
+      confirmText: 'Evet, İşlemi Sil',
+      confirmVariant: 'danger',
+      onConfirm: async () => {
+        setIsConfirmLoading(true)
+        setStatus('İşlem siliniyor...')
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || 'İşlem silinemedi.')
-      }
+        try {
+          const response = await fetch(`${apiBaseUrl}/api/admin/services/${serviceId}`, {
+            method: 'DELETE',
+            headers: authHeaders,
+          })
 
-      setDashboard((current) => ({
-        ...current,
-        services: current.services.filter((service) => service.id !== serviceId),
-      }))
-      setStatus('İşlem silindi.')
-      window.alert('İşlem başarıyla silindi.')
-    } catch (error) {
-      setStatus(error.message)
-      window.alert(error.message || 'İşlem silinemedi.')
-    }
+          if (!response.ok) {
+            const data = await response.json()
+            throw new Error(data.message || 'İşlem silinemedi.')
+          }
+
+          setDashboard((current) => ({
+            ...current,
+            services: current.services.filter((s) => s.id !== serviceId),
+          }))
+          setStatus('İşlem silindi.')
+          showToast('success', `"${serviceObj.name}" işlemi başarıyla silindi.`)
+          setConfirmModal(null)
+        } catch (error) {
+          setStatus(error.message)
+          showToast('error', error.message || 'İşlem silinemedi.')
+        } finally {
+          setIsConfirmLoading(false)
+        }
+      },
+    })
   }
 
   if (!isAuthenticated) {
@@ -866,7 +980,7 @@ function Admin() {
                           <button
                             className="admin-danger-button admin-delete-button"
                             type="button"
-                            onClick={() => deleteSelectedAppointment(appointment.id)}
+                            onClick={() => deleteSelectedAppointment(appointment)}
                             aria-label="Randevuyu sil"
                           >
                             <FaTrashCan aria-hidden="true" />
@@ -970,7 +1084,7 @@ function Admin() {
                   : dashboard.blockedSlots.length === 0 && <p>Bu tarih için kapalı saat yok.</p>}
                 {!isDashboardLoading &&
                   dashboard.blockedSlots.map((slot) => (
-                    <button type="button" key={slot.id} onClick={() => openBlockedSlot(slot.id)}>
+                    <button type="button" key={slot.id} onClick={() => openBlockedSlot(slot)}>
                       {slot.date} / {slot.time}
                       <span>
                         <FaCheck aria-hidden="true" />
@@ -1142,7 +1256,7 @@ function Admin() {
                       </strong>
                       <span className="admin-service-meta">{service.price}</span>
                       <span className="admin-service-meta">{service.time}</span>
-                      <button className="admin-danger-button" type="button" onClick={() => deleteSelectedService(service.id)}>
+                      <button className="admin-danger-button" type="button" onClick={() => deleteSelectedService(service)}>
                         <FaTrashCan aria-hidden="true" />
                         Sil
                       </button>
@@ -1152,6 +1266,108 @@ function Admin() {
           </section>
         )}
       </section>
+
+      {confirmModal && (
+        <div
+          className="admin-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => {
+            if (!isConfirmLoading) setConfirmModal(null)
+          }}
+        >
+          <div
+            className="admin-modal-box"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className={`admin-modal-icon-badge ${
+                confirmModal.confirmVariant === 'primary' ? 'is-primary' : 'is-danger'
+              }`}
+            >
+              {confirmModal.confirmVariant === 'primary' ? (
+                <FaCircleCheck aria-hidden="true" />
+              ) : (
+                <FaTrashCan aria-hidden="true" />
+              )}
+            </div>
+
+            <h3 className="admin-modal-title">{confirmModal.title}</h3>
+            <p className="admin-modal-subtitle">{confirmModal.subtitle}</p>
+
+            {confirmModal.itemName && (
+              <div className="admin-modal-item-card">
+                <span className="admin-modal-item-name">{confirmModal.itemName}</span>
+                {confirmModal.itemTags && confirmModal.itemTags.length > 0 && (
+                  <div className="admin-modal-item-tags">
+                    {confirmModal.itemTags.map((tag, idx) => (
+                      <span key={idx} className="admin-modal-tag">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {confirmModal.warning && (
+              <p className="admin-modal-warning">
+                <FaCircleExclamation aria-hidden="true" />
+                <span>{confirmModal.warning}</span>
+              </p>
+            )}
+
+            <div className="admin-modal-actions">
+              <button
+                type="button"
+                className="admin-modal-btn-cancel"
+                disabled={isConfirmLoading}
+                onClick={() => setConfirmModal(null)}
+              >
+                Vazgeç
+              </button>
+              <button
+                type="button"
+                className={`admin-modal-btn-confirm ${
+                  confirmModal.confirmVariant === 'primary' ? 'is-primary' : 'is-danger'
+                }`}
+                disabled={isConfirmLoading}
+                onClick={confirmModal.onConfirm}
+              >
+                {isConfirmLoading ? (
+                  <>
+                    <FaRotateRight className="admin-spin" aria-hidden="true" />
+                    Siliniyor...
+                  </>
+                ) : (
+                  confirmModal.confirmText || 'Sil'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className="admin-toast-container">
+          <div className={`admin-toast is-${toast.type}`} role="status">
+            {toast.type === 'success' ? (
+              <FaCircleCheck aria-hidden="true" />
+            ) : (
+              <FaCircleExclamation aria-hidden="true" />
+            )}
+            <span>{toast.message}</span>
+            <button
+              type="button"
+              className="admin-toast-close"
+              aria-label="Kapat"
+              onClick={() => setToast(null)}
+            >
+              <FaXmark aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

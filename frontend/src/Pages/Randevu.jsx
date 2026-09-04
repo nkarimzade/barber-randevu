@@ -71,7 +71,15 @@ function Randevu() {
   const [services, setServices] = useState(defaultServices)
   const [isServicesLoading, setIsServicesLoading] = useState(true)
   const [step, setStep] = useState(1)
-  const [selectedService, setSelectedService] = useState(defaultServices[0])
+  const [selectedService, setSelectedService] = useState(() => {
+    const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+    const serviceParam = params ? params.get('service') : null
+    if (serviceParam) {
+      const matched = defaultServices.find((s) => s.id === serviceParam)
+      if (matched) return matched
+    }
+    return defaultServices[0]
+  })
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedTime, setSelectedTime] = useState('')
   const [bookedTimes, setBookedTimes] = useState([])
@@ -147,7 +155,15 @@ function Randevu() {
         }
 
         setServices(data.services)
-        setSelectedService((current) => data.services.find((service) => service.id === current.id) || data.services[0])
+        setSelectedService((current) => {
+          const params = new URLSearchParams(window.location.search)
+          const serviceParam = params.get('service')
+          if (serviceParam) {
+            const matched = data.services.find((service) => service.id === serviceParam)
+            if (matched) return matched
+          }
+          return data.services.find((service) => service.id === current?.id) || data.services[0]
+        })
       })
       .catch(() => {
         if (isMounted) {

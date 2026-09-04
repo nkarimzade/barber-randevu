@@ -1207,3 +1207,355 @@
   .admin-card-toolbar button { flex: 1; min-width: 0; }
 }
 
+/* ─── Confirmation Modal ────────────────────────────────── */
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: adminModalFadeIn 0.2s ease-out;
+}
+
+@keyframes adminModalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.admin-modal-box {
+  position: relative;
+  width: min(450px, 100%);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 32px 28px;
+  box-shadow:
+    0 25px 50px -12px rgba(15, 23, 42, 0.25),
+    0 0 0 1px rgba(226, 232, 240, 0.8);
+  animation: adminModalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 15px;
+}
+
+@keyframes adminModalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.admin-modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: all 0.15s ease;
+}
+
+.admin-modal-close-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.admin-modal-icon-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin-top: 4px;
+}
+
+.admin-modal-icon-badge svg {
+  width: 26px;
+  height: 26px;
+}
+
+.admin-modal-icon-badge.is-danger {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 2px solid #fecaca;
+  box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.08);
+}
+
+.admin-modal-icon-badge.is-primary {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 2px solid #bfdbfe;
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.08);
+}
+
+.admin-modal-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.admin-modal-subtitle {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.admin-modal-item-card {
+  width: 100%;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-modal-item-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.admin-modal-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.admin-modal-tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  background: #ffffff;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+}
+
+.admin-modal-warning {
+  margin: 0;
+  padding: 10px 14px;
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+  border-radius: 10px;
+  color: #b45309;
+  font-size: 12.5px;
+  line-height: 1.45;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+
+.admin-modal-warning svg {
+  flex: none;
+  font-size: 15px;
+}
+
+.admin-modal-actions {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.admin-modal-btn-cancel {
+  height: 44px;
+  min-height: 44px;
+  background: #ffffff !important;
+  color: #475569 !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-modal-btn-cancel:hover:not(:disabled) {
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}
+
+.admin-modal-btn-confirm {
+  height: 44px;
+  min-height: 44px;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-modal-btn-confirm.is-danger {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3) !important;
+}
+
+.admin-modal-btn-confirm.is-danger:hover:not(:disabled) {
+  background: #b91c1c !important;
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.45) !important;
+  transform: translateY(-1px);
+}
+
+.admin-modal-btn-confirm.is-primary {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3) !important;
+}
+
+.admin-modal-btn-confirm.is-primary:hover:not(:disabled) {
+  background: #1d4ed8 !important;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45) !important;
+  transform: translateY(-1px);
+}
+
+.admin-modal-btn-confirm:disabled,
+.admin-modal-btn-cancel:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ─── Toast Notifications ────────────────────────────────── */
+.admin-toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.admin-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.15), 0 2px 6px rgba(0, 0, 0, 0.04);
+  animation: adminToastSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes adminToastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.admin-toast.is-success {
+  background: #ffffff;
+  color: #15803d;
+  border: 1.5px solid #86efac;
+}
+
+.admin-toast.is-success svg {
+  color: #16a34a;
+  font-size: 16px;
+  flex: none;
+}
+
+.admin-toast.is-error {
+  background: #ffffff;
+  color: #b91c1c;
+  border: 1.5px solid #fca5a5;
+}
+
+.admin-toast.is-error svg {
+  color: #dc2626;
+  font-size: 16px;
+  flex: none;
+}
+
+.admin-toast-close {
+  background: transparent !important;
+  border: none !important;
+  color: #94a3b8 !important;
+  padding: 2px !important;
+  min-height: auto !important;
+  cursor: pointer;
+  box-shadow: none !important;
+  margin-left: 6px;
+}
+
+.admin-toast-close:hover {
+  color: #334155 !important;
+}
+
+.admin-spin {
+  animation: adminSpin 0.8s linear infinite;
+}
+
+@keyframes adminSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-toast-container {
+    top: 16px;
+    right: 16px;
+    left: 16px;
+  }
+  .admin-toast {
+    width: 100%;
+  }
+  .admin-modal-box {
+    padding: 24px 18px;
+  }
+  .admin-modal-actions {
+    grid-template-columns: 1fr;
+  }
+}
+

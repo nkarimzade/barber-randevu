@@ -77,13 +77,14 @@ const reviews = [
   },
 ]
 const reviewRows = [reviews.slice(0, 6), reviews.slice(6)]
-const services = [
+const defaultServices = [
   { id: 'sac-kesimi', name: 'Sac kesimi', price: '350 TL', detail: 'Klasik, modern ve fade kesim' },
   { id: 'sakal-tirasi', name: 'Sakal tirasi', price: '200 TL', detail: 'Hat belirleme ve sicak havlu' },
   { id: 'sac-sakal-yikama', name: 'Sac + sakal', price: '500 TL', detail: 'Tam bakim paketi' },
   { id: 'cocuk-kesimi', name: 'Cocuk kesimi', price: '250 TL', detail: 'Rahat ve hizli kesim' },
   { id: 'damat-bakimi', name: 'Damat bakimi', price: '900 TL', detail: 'Ozel gun hazirligi' },
 ]
+const services = defaultServices
 
 const apiBaseUrl = import.meta.env.VITE_API_URL || ''
 
@@ -215,20 +216,30 @@ function Home() {
         return response.json()
       })
       .then((data) => {
-        if (!isMounted || !Array.isArray(data.services)) {
+        if (!isMounted || !Array.isArray(data.services) || data.services.length === 0) {
           return
         }
 
-        setHomeServices(
-          services.map((service) => ({
-            ...service,
-            ...data.services.find((apiService) => apiService.id === service.id),
-          })),
-        )
+        const staticMap = new Map(defaultServices.map((service) => [service.id, service]))
+
+        const mappedServices = data.services.map((apiService) => {
+          const fallback = staticMap.get(apiService.id)
+          return {
+            id: apiService.id,
+            name: apiService.name || fallback?.name || 'Hizmet',
+            price: apiService.price || fallback?.price || '',
+            detail:
+              apiService.detail ||
+              fallback?.detail ||
+              (apiService.time ? `${apiService.time} işlem süresi` : 'Özel berber hizmeti'),
+          }
+        })
+
+        setHomeServices(mappedServices)
       })
       .catch(() => {
         if (isMounted) {
-          setHomeServices(services)
+          setHomeServices(defaultServices)
         }
       })
 
@@ -475,21 +486,21 @@ function Home() {
             {homeServices.map((service, index) => (
               <motion.a
                 className="service-card"
-                href="/randevu"
-                key={service.name}
+                href={`/randevu?service=${encodeURIComponent(service.id || '')}`}
+                key={service.id || service.name || index}
                 initial={{ opacity: 0, y: 32 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.35 }}
                 transition={{
                   duration: 1.15,
-                  delay: 0.16 + index * 0.14,
+                  delay: 0.16 + (index % 8) * 0.12,
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
                 <span>{String(index + 1).padStart(2, '0')}</span>
                 <div>
                   <strong>{service.name}</strong>
-                  <p>{service.detail}</p>
+                  <p>{service.detail || 'Özel berber hizmeti'}</p>
                 </div>
                 <b>{service.price}</b>
                 <FaChevronRight aria-hidden="true" />
