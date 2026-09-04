@@ -346,7 +346,8 @@ function Admin() {
   }
 
   const openClosedDay = async (date) => {
-    setStatus('Gun aciliyor...')
+    if (!window.confirm(`${date} tarihli günün kapalılığını kaldırmak istediğinize emin misiniz?`)) return
+    setStatus('Gün açılıyor...')
 
     try {
       const response = await fetch(`${apiBaseUrl}/api/admin/closed-days/${date}`, {
@@ -356,13 +357,15 @@ function Admin() {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.message || 'Gun acilamadi.')
+        throw new Error(data.message || 'Gün açılamadı.')
       }
 
       await loadDashboard()
-      setStatus('Gun tekrar acildi.')
+      setStatus('Gün tekrar açıldı.')
+      window.alert('Gün tekrar randevuya açıldı.')
     } catch (error) {
       setStatus(error.message)
+      window.alert(error.message || 'Gün açılamadı.')
     }
   }
 
@@ -394,7 +397,8 @@ function Admin() {
   }
 
   const openBlockedSlot = async (slotId) => {
-    setStatus('Saat aciliyor...')
+    if (!window.confirm('Bu saat engelini kaldırmak istediğinize emin misiniz?')) return
+    setStatus('Saat açılıyor...')
 
     try {
       const response = await fetch(`${apiBaseUrl}/api/admin/blocked-slots/${slotId}`, {
@@ -404,13 +408,15 @@ function Admin() {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.message || 'Saat acilamadi.')
+        throw new Error(data.message || 'Saat açılamadı.')
       }
 
       await loadDashboard()
-      setStatus('Saat tekrar acildi.')
+      setStatus('Saat tekrar açıldı.')
+      window.alert('Saat engeli kaldırıldı.')
     } catch (error) {
       setStatus(error.message)
+      window.alert(error.message || 'Saat açılamadı.')
     }
   }
 
@@ -454,7 +460,7 @@ function Admin() {
   }
 
   const deleteSelectedAppointment = async (appointmentId) => {
-    if (!window.confirm('Bu randevu silinsin mi?')) return
+    if (!window.confirm('Bu randevuyu silmek istediğinize emin misiniz?')) return
     setStatus('Randevu siliniyor...')
 
     try {
@@ -473,13 +479,16 @@ function Admin() {
         appointments: current.appointments.filter((a) => a.id !== appointmentId),
       }))
       setStatus('Randevu silindi.')
+      window.alert('Randevu başarıyla silindi.')
     } catch (error) {
       setStatus(error.message)
+      window.alert(error.message || 'Randevu silinemedi.')
     }
   }
 
   const unblockSelectedPhone = async (phone) => {
-    setStatus('Engel kaldiriliyor...')
+    if (!window.confirm(`${phone} numarasının engelini kaldırmak istediğinize emin misiniz?`)) return
+    setStatus('Engel kaldırılıyor...')
 
     try {
       const response = await fetch(`${apiBaseUrl}/api/admin/blocked-phones/${phone}`, {
@@ -489,13 +498,15 @@ function Admin() {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.message || 'Engel kaldirilamadi.')
+        throw new Error(data.message || 'Engel kaldırılamadı.')
       }
 
       await loadDashboard()
-      setStatus('Numara engeli kaldirildi.')
+      setStatus('Numara engeli kaldırıldı.')
+      window.alert('Numara engeli başarıyla kaldırıldı.')
     } catch (error) {
       setStatus(error.message)
+      window.alert(error.message || 'Engel kaldırılamadı.')
     }
   }
 
@@ -570,7 +581,8 @@ function Admin() {
   }
 
   const deleteSelectedService = async (serviceId) => {
-    setStatus('Islem siliniyor...')
+    if (!window.confirm('Bu işlemi silmek istediğinize emin misiniz?')) return
+    setStatus('İşlem siliniyor...')
 
     try {
       const response = await fetch(`${apiBaseUrl}/api/admin/services/${serviceId}`, {
@@ -580,16 +592,18 @@ function Admin() {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.message || 'Islem silinemedi.')
+        throw new Error(data.message || 'İşlem silinemedi.')
       }
 
       setDashboard((current) => ({
         ...current,
         services: current.services.filter((service) => service.id !== serviceId),
       }))
-      setStatus('Islem silindi.')
+      setStatus('İşlem silindi.')
+      window.alert('İşlem başarıyla silindi.')
     } catch (error) {
       setStatus(error.message)
+      window.alert(error.message || 'İşlem silinemedi.')
     }
   }
 
@@ -922,11 +936,15 @@ function Admin() {
                 <label>
                   <span>Saat</span>
                   <select value={selectedSlotTime} onChange={(event) => setSelectedSlotTime(event.target.value)}>
-                    {timeSlots.map((time) => (
-                      <option value={time} key={time}>
-                        {time}
-                      </option>
-                    ))}
+                    {timeSlots.map((time) => {
+                      const isToday = selectedDate === formatLocalDate(new Date())
+                      const isPast = isToday && parseInt(time.split(':')[0], 10) < new Date().getHours()
+                      return (
+                        <option value={time} key={time}>
+                          {time} {isPast ? '(-)' : ''}
+                        </option>
+                      )
+                    })}
                   </select>
                 </label>
                 <label>

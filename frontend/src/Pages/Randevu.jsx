@@ -48,12 +48,12 @@ const pageReveal = {
   transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
 }
 
-function getDateOptions() {
+function getDateOptions(baseDate = new Date()) {
   const weekdayFormatter = new Intl.DateTimeFormat('tr-TR', { weekday: 'short' })
   const monthFormatter = new Intl.DateTimeFormat('tr-TR', { month: 'short' })
 
   return Array.from({ length: 7 }, (_, index) => {
-    const date = new Date()
+    const date = new Date(baseDate)
     date.setDate(date.getDate() + index)
 
     return {
@@ -67,6 +67,7 @@ function getDateOptions() {
 }
 
 function Randevu() {
+  const [currentTime, setCurrentTime] = useState(() => new Date())
   const [services, setServices] = useState(defaultServices)
   const [isServicesLoading, setIsServicesLoading] = useState(true)
   const [step, setStep] = useState(1)
@@ -85,7 +86,28 @@ function Randevu() {
   const [createdAppointment, setCreatedAppointment] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [appointmentError, setAppointmentError] = useState('')
-  const dateOptions = useMemo(() => getDateOptions(), [])
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 10000)
+
+    return () => clearInterval(timer)
+  }, [])
+
+  const todayString = formatLocalDate(currentTime)
+  const isPastSlot = (time) => {
+    if (!selectedDate) return false
+    if (selectedDate < todayString) return true
+    if (selectedDate === todayString) {
+      const slotHour = parseInt(time.split(':')[0], 10)
+      const currentHour = currentTime.getHours()
+      return slotHour < currentHour
+    }
+    return false
+  }
+
+  const dateOptions = useMemo(() => getDateOptions(currentTime), [todayString])
   const closedDayValues = useMemo(() => new Set(closedDays.map((day) => day.date)), [closedDays])
   const visibleDateOptions = useMemo(
     () => dateOptions.map((date) => ({ ...date, isClosed: date.isSunday || closedDayValues.has(date.value) })),
@@ -212,7 +234,7 @@ function Randevu() {
 
         const nextBookedTimes = data.slots.filter((slot) => slot.isBooked).map((slot) => slot.time)
         setBookedTimes(nextBookedTimes)
-        setSelectedTime((current) => (nextBookedTimes.includes(current) ? '' : current))
+        setSelectedTime((current) => (nextBookedTimes.includes(current) || isPastSlot(current) ? '' : current))
       })
       .catch(() => {
         if (isMounted) {
@@ -229,6 +251,12 @@ function Randevu() {
       isMounted = false
     }
   }, [selectedDate])
+
+  useEffect(() => {
+    if (selectedTime && isPastSlot(selectedTime)) {
+      setSelectedTime('')
+    }
+  }, [currentTime, selectedDate, selectedTime])
 
   const createAppointment = async () => {
     if (!isCustomerPhoneValid) {
@@ -396,20 +424,23 @@ function Randevu() {
                 <div className="time-grid">
                   {isAvailabilityLoading
                     ? timeSlots.map((time) => <i className="appointment-skeleton appointment-time-skeleton" key={time} />)
-                    : timeSlots.map((time) => (
-                        <button
-                          className={`${selectedTime === time ? 'is-selected' : ''} ${
-                            bookedTimes.includes(time) ? 'is-booked' : ''
-                          }`}
-                          type="button"
-                          disabled={bookedTimes.includes(time)}
-                          key={time}
-                          onClick={() => setSelectedTime(time)}
-                        >
-                          <span>{time}</span>
-                          {bookedTimes.includes(time) && <i>-</i>}
-                        </button>
-                      ))}
+                    : timeSlots.map((time) => {
+                        const isUnavailable = bookedTimes.includes(time) || isPastSlot(time)
+                        return (
+                          <button
+                            className={`${selectedTime === time ? 'is-selected' : ''} ${
+                              isUnavailable ? 'is-booked' : ''
+                            }`}
+                            type="button"
+                            disabled={isUnavailable}
+                            key={time}
+                            onClick={() => setSelectedTime(time)}
+                          >
+                            <span>{time}</span>
+                            {isUnavailable && <i>-</i>}
+                          </button>
+                        )
+                      })}
                 </div>
               </motion.div>
             )}

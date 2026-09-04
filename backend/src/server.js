@@ -333,6 +333,26 @@ function normalizeText(value) {
   return typeof value === 'string' ? value.trim() : ''
 }
 
+function getTurkeyDateAndHour() {
+  const now = new Date()
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Istanbul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    hour12: false,
+  })
+  const parts = formatter.formatToParts(now)
+  const partMap = {}
+  parts.forEach((p) => {
+    partMap[p.type] = p.value
+  })
+  const todayStr = `${partMap.year}-${partMap.month}-${partMap.day}`
+  const hour = parseInt(partMap.hour, 10)
+  return { todayStr, hour }
+}
+
 function isAdminRequest(request) {
   if (!adminToken) {
     return false
@@ -369,7 +389,7 @@ async function handleRequest(request, response) {
     return
   }
 
-  if (request.method === 'GET' && url.pathname === '/api/health') {
+  if ((request.method === 'GET' || request.method === 'HEAD') && (url.pathname === '/api/health' || url.pathname === '/health' || url.pathname === '/')) {
     sendJson(response, 200, { ok: true })
     return
   }
@@ -404,13 +424,22 @@ async function handleRequest(request, response) {
         .map((appointment) => appointment.time),
     )
     const blockedTimes = new Set(blockedSlots.map((slot) => slot.time))
+    const { todayStr, hour: currentHour } = getTurkeyDateAndHour()
+    const isSlotPast = (time) => {
+      if (date < todayStr) return true
+      if (date === todayStr) {
+        const slotHour = parseInt(time.split(':')[0], 10)
+        return slotHour < currentHour
+      }
+      return false
+    }
 
     sendJson(response, 200, {
       date,
       isClosed,
       slots: timeSlots.map((time) => ({
         time,
-        isBooked: isClosed || bookedTimes.has(time) || blockedTimes.has(time),
+        isBooked: isClosed || bookedTimes.has(time) || blockedTimes.has(time) || isSlotPast(time),
       })),
     })
     return
@@ -446,6 +475,19 @@ async function handleRequest(request, response) {
     if (!service || !isDate(date) || !timeSlots.includes(time) || !customerName || !isNumberId(numberId)) {
       sendJson(response, 400, { message: 'Randevu bilgileri eksik veya hatali.' })
       return
+    }
+
+    const { todayStr, hour: currentHour } = getTurkeyDateAndHour()
+    if (date < todayStr) {
+      sendJson(response, 400, { message: 'Geçmiş bir tarihe randevu alınamaz.' })
+      return
+    }
+    if (date === todayStr) {
+      const slotHour = parseInt(time.split(':')[0], 10)
+      if (slotHour < currentHour) {
+        sendJson(response, 400, { message: 'Geçmiş bir saate randevu alınamaz.' })
+        return
+      }
     }
 
     if (isSunday(date) || (await isDayClosed(date))) {
