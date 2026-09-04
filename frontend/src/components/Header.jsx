@@ -83,7 +83,7 @@ function Header() {
             <div className="menu-contact">
               <span>+90 536 415 97 42</span>
               <span>-</span>
-              <span>@muhammed_barbers</span>
+              <span>@zmamix1</span>
             </div>
           </div>
 

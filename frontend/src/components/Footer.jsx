@@ -1,4 +1,4 @@
-import { FaAngleUp, FaInstagram, FaPhoneAlt, FaWhatsapp } from 'react-icons/fa'
+import { FaAngleUp, FaInstagram, FaPhoneAlt } from 'react-icons/fa'
 
 const footerLinks = [
   {
@@ -23,13 +23,8 @@ const footerLinks = [
 
 const socialLinks = [
   {
-    label: 'WhatsApp',
-    href: 'https://wa.me/905364159742',
-    Icon: FaWhatsapp,
-  },
-  {
     label: 'Instagram',
-    href: 'https://www.instagram.com/muhammed_barbers',
+    href: 'https://www.instagram.com/zmamix1/',
     Icon: FaInstagram,
   },
   {
@@ -65,7 +60,7 @@ function Footer() {
           </div>
 
           <div className="footer-social">
-            <span>Takip & Yaz</span>
+            <span>Takip Et</span>
             <div>
               {socialLinks.map(({ href, Icon, label }) => (
                 <a href={href} aria-label={label} key={label}>

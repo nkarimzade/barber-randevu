@@ -322,7 +322,7 @@
 .admin-mobile-menu-button,
 .admin-mobile-brand,
 .admin-sidebar-backdrop {
-  display: none;
+  display: none !important;
 }
 
 /*  Sidebar  */
@@ -1049,7 +1049,7 @@
     position: fixed;
     top: 56px; right: 0; bottom: 0; left: 0;
     z-index: 80;
-    display: block;
+    display: block !important;
     border: 0;
     border-radius: 0;
     padding: 0;

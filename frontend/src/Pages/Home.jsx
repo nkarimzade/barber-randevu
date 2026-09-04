@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { FaInstagram, FaPhoneAlt, FaWhatsapp } from 'react-icons/fa'
+import { FaInstagram, FaPhoneAlt } from 'react-icons/fa'
 import { FaChevronRight } from 'react-icons/fa6'
 import Footer from '../components/Footer'
 import InfiniteSpiral from '../components/InfiniteSpiral'
@@ -192,16 +192,15 @@ function Home() {
   const handleContactSubmit = (event) => {
     event.preventDefault()
 
-    const message = [
-      'Merhaba Muhammed Barber, iletisim formundan yaziyorum.',
-      `Ad Soyad: ${contactForm.name}`,
-      `Telefon: ${contactForm.phone}`,
-      `E-posta: ${contactForm.email}`,
-      `Konu: ${contactForm.subject}`,
-      `Mesaj: ${contactForm.message}`,
-    ].join('\n')
-
-    window.open(`https://wa.me/905364159742?text=${encodeURIComponent(message)}`, '_blank', 'noreferrer')
+    setContactForm({
+      name: '',
+      phone: '',
+      email: '',
+      subject: 'Randevu',
+      message: '',
+      kvkk: false,
+    })
+    window.alert('Mesajiniz alindi. En kisa surede size donus yapilacak.')
   }
 
   useEffect(() => {
@@ -314,11 +313,8 @@ function Home() {
              
             </div>
             <div className="hero-socials" aria-label="Sosyal medya">
-              <a href="https://www.instagram.com/muhammed_barbers" aria-label="Instagram">
+              <a href="https://www.instagram.com/zmamix1/" aria-label="Instagram">
                 <FaInstagram />
-              </a>
-              <a href="https://wa.me/905364159742" aria-label="WhatsApp">
-                <FaWhatsapp />
               </a>
             </div>
           </div>
@@ -598,7 +594,7 @@ function Home() {
             </label>
 
             <button type="submit">
-              <FaWhatsapp aria-hidden="true" />
+              <FaPhoneAlt aria-hidden="true" />
               Gonder
             </button>
           </motion.form>
