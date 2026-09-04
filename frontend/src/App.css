@@ -1,3 +1,194 @@
+.page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #030303;
+  color: #ffffff;
+  animation:
+    loaderBackgroundClear 0.01s linear 2.42s forwards,
+    loaderHide 0.01s linear 3.18s forwards;
+}
+
+.page-loader::before,
+.page-loader::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.page-loader::before {
+  inset: 0 calc(50% - 1px) 0 0;
+  z-index: 2;
+  background: #030303;
+  animation: loaderSplitLeft 0.86s cubic-bezier(0.85, 0, 0.15, 1) 2.42s forwards;
+}
+
+.page-loader::after {
+  inset: 0 0 0 calc(50% - 1px);
+  z-index: 2;
+  background: #030303;
+  animation: loaderSplitRight 0.86s cubic-bezier(0.85, 0, 0.15, 1) 2.42s forwards;
+}
+
+.loader-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  height: 3px;
+  width: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+.loader-progress::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: loaderLineFill 2.32s cubic-bezier(0.76, 0, 0.24, 1) 0.18s forwards;
+}
+
+.loader-inner {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  gap: 26px;
+  padding: 0 24px;
+  animation: loaderContentOut 0.42s cubic-bezier(0.76, 0, 0.24, 1) 2.22s forwards;
+}
+
+.loader-logo-frame {
+  width: clamp(160px, 22vw, 300px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  opacity: 0;
+  transform: translateY(16px) scale(0.94);
+  animation: loaderLogoIn 0.72s cubic-bezier(0.22, 1, 0.36, 1) 0.08s forwards;
+}
+
+.loader-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 0;
+  filter: drop-shadow(0 28px 70px rgba(255, 255, 255, 0.12));
+}
+
+.loader-brand {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-height: 112px;
+  text-align: center;
+}
+
+.loader-brand-word {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.96);
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: clamp(48px, 9vw, 98px);
+  font-weight: 900;
+  line-height: 0.86;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.loader-brand-word:nth-child(2) {
+  color: rgba(255, 255, 255, 0.72);
+  font-family: 'Italianno', Georgia, serif;
+  font-size: clamp(54px, 9vw, 108px);
+  font-weight: 400;
+  text-transform: none;
+}
+
+.loader-letter {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(18px);
+  animation: loaderLetterIn 0.58s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes loaderLogoIn {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes loaderLetterIn {
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes loaderLineFill {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes loaderContentOut {
+  to {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+}
+
+@keyframes loaderSplitLeft {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes loaderSplitRight {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes loaderBackgroundClear {
+  to {
+    background: transparent;
+  }
+}
+
+@keyframes loaderHide {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-loader,
+  .page-loader::after,
+  .loader-progress::before,
+  .loader-inner,
+  .loader-logo-frame,
+  .loader-letter {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+  }
+}
+
 .site-header {
   position: sticky;
   top: 0;

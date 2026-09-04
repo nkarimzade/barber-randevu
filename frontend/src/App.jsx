@@ -1,4 +1,5 @@
 
+import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Header from './components/Header'
@@ -8,12 +9,58 @@ import RandevuSorgula from './Pages/RandevuSorgula'
 import Kvkk from './Pages/Kvkk'
 import Admin from './Pages/Admin'
 
+const loaderWords = ['Muhammed', 'Barber']
+const loaderText = loaderWords.join(' ')
+
+function PageLoader({ onComplete }) {
+  const words = useMemo(() => loaderWords.map((word) => word.split('')), [])
+
+  useEffect(() => {
+    const timer = window.setTimeout(onComplete, 3300)
+    return () => window.clearTimeout(timer)
+  }, [onComplete])
+
+  return (
+    <div className="page-loader" aria-label="Sayfa yukleniyor">
+      <div className="loader-progress" aria-hidden="true" />
+      <div className="loader-inner">
+        <div className="loader-logo-frame">
+          <img className="loader-logo" src="/logo.png" alt="Muhammed Barber logo" />
+        </div>
+        <strong className="loader-brand" aria-label={loaderText}>
+          {words.map((letters, wordIndex) => {
+            const previousLetterCount = words.slice(0, wordIndex).reduce((total, word) => total + word.length, 0)
+
+            return (
+              <span className="loader-brand-word" key={loaderWords[wordIndex]}>
+                {letters.map((letter, letterIndex) => (
+                  <span
+                    className="loader-letter"
+                    key={`${letter}-${letterIndex}`}
+                    style={{ animationDelay: `${0.5 + (previousLetterCount + letterIndex) * 0.065}s` }}
+                    aria-hidden="true"
+                  >
+                    {letter}
+                  </span>
+                ))}
+              </span>
+            )
+          })}
+        </strong>
+      </div>
+    </div>
+  )
+}
+
 function App() {
   const location = useLocation()
   const isAdminPage = location.pathname.startsWith('/admin')
+  const [hasLoaderCompleted, setHasLoaderCompleted] = useState(isAdminPage)
+  const shouldShowLoader = !isAdminPage && !hasLoaderCompleted
 
   return (
     <>
+      {shouldShowLoader && <PageLoader onComplete={() => setHasLoaderCompleted(true)} />}
       {!isAdminPage && <Header />}
       <Routes>
         <Route path="/" element={<Home />} />
