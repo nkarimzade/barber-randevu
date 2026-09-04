@@ -1,10 +1,44 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { HiOutlineMenuAlt4 } from 'react-icons/hi'
 import { IoCloseOutline } from 'react-icons/io5'
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuLinks = ['Hakkimizda', 'Hizmetler', 'Galeri', 'Iletisim']
+
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return undefined
+    }
+
+    const scrollY = window.scrollY
+    const { body } = document
+    const previousStyles = {
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      width: body.style.width,
+      overflow: body.style.overflow,
+    }
+
+    body.style.position = 'fixed'
+    body.style.top = `-${scrollY}px`
+    body.style.left = '0'
+    body.style.right = '0'
+    body.style.width = '100%'
+    body.style.overflow = 'hidden'
+
+    return () => {
+      body.style.position = previousStyles.position
+      body.style.top = previousStyles.top
+      body.style.left = previousStyles.left
+      body.style.right = previousStyles.right
+      body.style.width = previousStyles.width
+      body.style.overflow = previousStyles.overflow
+      window.scrollTo(0, scrollY)
+    }
+  }, [isMenuOpen])
 
   return (
     <header className="site-header">
@@ -47,7 +81,7 @@ function Header() {
               <a href="/iletisim">Iletisim</a>
             </div>
             <div className="menu-contact">
-              <span>+90 538 811 78 68</span>
+              <span>+90 536 415 97 42</span>
               <span>-</span>
               <span>@muhammed_barbers</span>
             </div>

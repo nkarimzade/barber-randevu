@@ -45,7 +45,7 @@
 .spiral-lightbox {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 1000000;
   padding: 24px;
   display: flex;
   align-items: center;
@@ -68,7 +68,7 @@
   position: fixed;
   top: 22px;
   right: 22px;
-  z-index: 101;
+  z-index: 1000001;
   width: 46px;
   height: 46px;
   display: inline-flex;

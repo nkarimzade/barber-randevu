@@ -100,7 +100,7 @@ const InfiniteSpiral = ({
 
       const autoEnabled = animationMode === 'auto' || animationMode === 'all';
       const motionPaused =
-        draggingRef.current || (pauseOnHover && canHoverRef.current && hoveredRef.current);
+        selectedItem || draggingRef.current || (pauseOnHover && canHoverRef.current && hoveredRef.current);
       const directionMultiplier = direction === 'down' ? -1 : 1;
       const desiredAutoSpeed =
         autoEnabled && visibleRef.current && !reducedMotion.matches && !motionPaused
@@ -173,7 +173,8 @@ const InfiniteSpiral = ({
     centerScale,
     edgeFade,
     edgeBlur,
-    pauseOnHover
+    pauseOnHover,
+    selectedItem
   ]);
 
   const rootStyle = {

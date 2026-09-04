@@ -5,7 +5,7 @@ function Kvkk() {
         <span className="section-kicker">KVKK</span>
         <h1>Aydinlatma Metni</h1>
         <p>
-          Muhammed Barbers tarafindan randevu islemlerinin yurutulmesi amaciyla
+          Muhammed Barber tarafindan randevu islemlerinin yurutulmesi amaciyla
           ad soyad, telefon numarasi, secilen hizmet, tarih ve saat bilgileriniz
           islenebilir.
         </p>

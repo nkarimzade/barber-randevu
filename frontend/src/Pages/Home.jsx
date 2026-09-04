@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { FaInstagram, FaWhatsapp } from 'react-icons/fa'
+import { FaInstagram, FaPhoneAlt, FaWhatsapp } from 'react-icons/fa'
 import { FaChevronRight } from 'react-icons/fa6'
+import Footer from '../components/Footer'
 import InfiniteSpiral from '../components/InfiniteSpiral'
 
 const heroImageMobile = '/hero-barber.jpg'
@@ -14,9 +15,9 @@ const revealProps = {
 }
 
 const images = [
-  { src: '/galery/1.jpg', alt: 'Muhammed Barbers sac kesimi' },
-  { src: '/galery/2.jfif', alt: 'Muhammed Barbers sakal tirasi' },
-  { src: '/galery/3.jfif', alt: 'Muhammed Barbers salon detayi' },
+  { src: '/galery/1.jpg', alt: 'Muhammed Barber sac kesimi' },
+  { src: '/galery/2.jfif', alt: 'Muhammed Barber sakal tirasi' },
+  { src: '/galery/3.jfif', alt: 'Muhammed Barber salon detayi' },
   { src: '/galery/4.jfif', alt: 'Cankiri Merkez berber hizmeti' },
   { src: '/galery/5.jfif', alt: 'Modern erkek kuaforu' },
   { src: '/galery/6.jfif', alt: 'Profesyonel berber isciligi' },
@@ -77,11 +78,32 @@ const reviews = [
 ]
 const reviewRows = [reviews.slice(0, 6), reviews.slice(6)]
 const services = [
-  { name: 'Sac kesimi', price: '350 TL', detail: 'Klasik, modern ve fade kesim' },
-  { name: 'Sakal tirasi', price: '200 TL', detail: 'Hat belirleme ve sicak havlu' },
-  { name: 'Sac + sakal', price: '500 TL', detail: 'Tam bakim paketi' },
-  { name: 'Cocuk kesimi', price: '250 TL', detail: 'Rahat ve hizli kesim' },
-  { name: 'Damat bakimi', price: '900 TL', detail: 'Ozel gun hazirligi' },
+  { id: 'sac-kesimi', name: 'Sac kesimi', price: '350 TL', detail: 'Klasik, modern ve fade kesim' },
+  { id: 'sakal-tirasi', name: 'Sakal tirasi', price: '200 TL', detail: 'Hat belirleme ve sicak havlu' },
+  { id: 'sac-sakal-yikama', name: 'Sac + sakal', price: '500 TL', detail: 'Tam bakim paketi' },
+  { id: 'cocuk-kesimi', name: 'Cocuk kesimi', price: '250 TL', detail: 'Rahat ve hizli kesim' },
+  { id: 'damat-bakimi', name: 'Damat bakimi', price: '900 TL', detail: 'Ozel gun hazirligi' },
+]
+
+const apiBaseUrl = import.meta.env.VITE_API_URL || ''
+
+const faqs = [
+  {
+    question: 'Randevu almak zorunlu mu?',
+    answer: 'Randevu almanizi oneririz. Musaitlik varsa randevusuz da yardimci oluruz.',
+  },
+  {
+    question: 'Sac sakal islemi ne kadar surer?',
+    answer: 'Sac ve sakal bakimi ortalama 50-60 dakika surer. Secilen modele gore sure degisebilir.',
+  },
+  {
+    question: 'Odeme nasil yapiliyor?',
+    answer: 'Salonda nakit veya kart ile odeme yapabilirsiniz.',
+  },
+  {
+    question: 'Cocuk kesimi yapiyor musunuz?',
+    answer: 'Evet, cocuk kesimi icin de randevu olusturabilirsiniz.',
+  },
 ]
 
 function CountUp({ end, suffix = '', prefix = '' }) {
@@ -146,8 +168,77 @@ function CountUp({ end, suffix = '', prefix = '' }) {
 }
 
 function Home() {
+  const [openFaqIndex, setOpenFaqIndex] = useState(0)
+  const [homeServices, setHomeServices] = useState(services)
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    subject: 'Randevu',
+    message: '',
+    kvkk: false,
+  })
+
+  const handleContactChange = (event) => {
+    const { checked, name, type, value } = event.target
+
+    setContactForm((current) => ({
+      ...current,
+      [name]: type === 'checkbox' ? checked : value,
+    }))
+  }
+
+  const handleContactSubmit = (event) => {
+    event.preventDefault()
+
+    const message = [
+      'Merhaba Muhammed Barber, iletisim formundan yaziyorum.',
+      `Ad Soyad: ${contactForm.name}`,
+      `Telefon: ${contactForm.phone}`,
+      `E-posta: ${contactForm.email}`,
+      `Konu: ${contactForm.subject}`,
+      `Mesaj: ${contactForm.message}`,
+    ].join('\n')
+
+    window.open(`https://wa.me/905364159742?text=${encodeURIComponent(message)}`, '_blank', 'noreferrer')
+  }
+
+  useEffect(() => {
+    let isMounted = true
+
+    fetch(`${apiBaseUrl}/api/services`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Hizmetler alinamadi.')
+        }
+
+        return response.json()
+      })
+      .then((data) => {
+        if (!isMounted || !Array.isArray(data.services)) {
+          return
+        }
+
+        setHomeServices(
+          services.map((service) => ({
+            ...service,
+            ...data.services.find((apiService) => apiService.id === service.id),
+          })),
+        )
+      })
+      .catch(() => {
+        if (isMounted) {
+          setHomeServices(services)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
   return (
-    <main className="home-page">
+    <main className="home-page" id="top">
       <section className="hero-section">
         <h1 className="mobile-hero-title">
           <motion.span
@@ -166,13 +257,13 @@ function Home() {
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 1.2, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
           >
-            Barbers
+            Barber
           </motion.span>
         </h1>
         <div className="seo-content">
-          <h2>Muhammed Barbers Cankiri Merkez Berber</h2>
+          <h2>Muhammed Barber Cankiri Merkez Berber</h2>
           <p>
-            Muhammed Barbers, Cankiri Merkez'de erkek sac kesimi, sakal tirasi,
+            Muhammed Barber, Cankiri Merkez'de erkek sac kesimi, sakal tirasi,
             sac sekillendirme ve profesyonel berber hizmetleri sunar.
           </p>
         </div>
@@ -193,10 +284,6 @@ function Home() {
             <i />
           </a>
 
-          <div className="hero-status">
-            <span>Cankiri Merkez</span>
-          </div>
-
           <div className="hero-cta-card">
             <div>
               <span>Siradaki kesim</span>
@@ -209,14 +296,17 @@ function Home() {
           </div>
 
           <div className="hero-bottom-row">
-            <a className="secondary-hero-action" href="/randevu-sorgula">
-              Randevu Sorgula
-            </a>
+            <div className="hero-bottom-actions">
+              <a className="secondary-hero-action" href="/randevu-sorgula">
+                Randevu Sorgula
+              </a>
+             
+            </div>
             <div className="hero-socials" aria-label="Sosyal medya">
               <a href="https://www.instagram.com/muhammed_barbers" aria-label="Instagram">
                 <FaInstagram />
               </a>
-              <a href="https://wa.me/905388117868" aria-label="WhatsApp">
+              <a href="https://wa.me/905364159742" aria-label="WhatsApp">
                 <FaWhatsapp />
               </a>
             </div>
@@ -228,7 +318,7 @@ function Home() {
         <div className="about-content">
           <motion.div className="about-copy" {...revealProps}>
             <span className="section-kicker">Cankiri Merkez</span>
-            <h2>Muhammed Barbers</h2>
+            <h2>Muhammed Barber</h2>
             <p>
               Modern erkek bakimini guclu stil, temiz iscilik ve rahat bir salon
               deneyimiyle bulusturuyoruz.
@@ -382,7 +472,7 @@ function Home() {
           </div>
 
           <div className="service-list">
-            {services.map((service, index) => (
+            {homeServices.map((service, index) => (
               <motion.a
                 className="service-card"
                 href="/randevu"
@@ -408,6 +498,175 @@ function Home() {
           </div>
         </div>
       </section>
+
+      <section className="contact-section" id="iletisim">
+        <div className="contact-content">
+          <motion.div className="contact-heading" {...revealProps}>
+            <h2>Bize ulas</h2>
+            <FaPhoneAlt className="contact-phone-mark" aria-hidden="true" />
+            <p>
+              Bir form doldur, en kisa surede sana donelim.
+            </p>
+          </motion.div>
+
+          <motion.form
+            className="contact-form"
+            onSubmit={handleContactSubmit}
+            initial={{ opacity: 0, y: 34 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.35 }}
+            transition={{ duration: 1.1, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <label>
+              <span>Ad*</span>
+              <input
+                type="text"
+                name="name"
+                value={contactForm.name}
+                onChange={handleContactChange}
+                required
+              />
+            </label>
+
+            <label>
+              <span>Telefon*</span>
+              <input
+                type="tel"
+                name="phone"
+                value={contactForm.phone}
+                onChange={handleContactChange}
+                required
+              />
+            </label>
+
+            <label>
+              <span>E-posta*</span>
+              <input
+                type="email"
+                name="email"
+                value={contactForm.email}
+                onChange={handleContactChange}
+                required
+              />
+            </label>
+
+            <label>
+              <span>Konu</span>
+              <select name="subject" value={contactForm.subject} onChange={handleContactChange}>
+                <option>Randevu</option>
+                <option>Fiyat Bilgisi</option>
+                <option>Hizmetler</option>
+                <option>Diger</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Mesaj</span>
+              <textarea
+                name="message"
+                value={contactForm.message}
+                onChange={handleContactChange}
+                required
+              />
+            </label>
+
+            <label className="contact-kvkk">
+              <input
+                type="checkbox"
+                name="kvkk"
+                checked={contactForm.kvkk}
+                onChange={handleContactChange}
+                required
+              />
+              <span>
+                <a href="/kvkk" target="_blank" rel="noreferrer">
+                  KVKK Aydinlatma Metni
+                </a>
+                'ni okudum; bilgilerimin iletisim amaciyla islenmesini onayliyorum.
+              </span>
+            </label>
+
+            <button type="submit">
+              <FaWhatsapp aria-hidden="true" />
+              Gonder
+            </button>
+          </motion.form>
+
+          <motion.div
+            className="contact-map"
+            initial={{ opacity: 0, y: 34 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 1.1, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <a
+              href="https://yandex.com.tr/maps/org/demirbas_erkek_kuaforu/98280357783/?utm_medium=mapframe&utm_source=maps"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Demirbas Erkek Kuaforu
+            </a>
+            <a
+              href="https://yandex.com.tr/maps/103872/cankiri/category/barber_shop/239628851835/?utm_medium=mapframe&utm_source=maps"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Cankiri icin Berberler
+            </a>
+            <iframe
+              src="https://yandex.com.tr/map-widget/v1/org/demirbas_erkek_kuaforu/98280357783/?ll=33.617347%2C40.598715&z=17"
+              title="Demirbas Erkek Kuaforu harita"
+              loading="lazy"
+              allowFullScreen
+            />
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="faq-section" id="sss">
+        <div className="faq-content">
+          <motion.div className="faq-heading" {...revealProps}>
+            <span className="section-kicker">SSS</span>
+            <h2>Merak edilenler</h2>
+          </motion.div>
+
+          <motion.div
+            className="faq-list"
+            initial={{ opacity: 0, y: 34 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 1.1, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {faqs.map((faq, index) => (
+              <div className={`faq-item ${openFaqIndex === index ? 'is-open' : ''}`} key={faq.question}>
+                <button
+                  className="faq-question"
+                  type="button"
+                  aria-expanded={openFaqIndex === index}
+                  onClick={() => setOpenFaqIndex((current) => (current === index ? -1 : index))}
+                >
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  <strong>{faq.question}</strong>
+                  <i aria-hidden="true" />
+                </button>
+                <motion.div
+                  className="faq-answer"
+                  initial={false}
+                  animate={{
+                    height: openFaqIndex === index ? 'auto' : 0,
+                    opacity: openFaqIndex === index ? 1 : 0,
+                  }}
+                  transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <p>{faq.answer}</p>
+                </motion.div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      <Footer />
     </main>
   )
 }

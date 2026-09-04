@@ -1,14 +1,18 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6'
+import { FaChevronLeft, FaChevronRight, FaSpinner } from 'react-icons/fa6'
+import { formatLocalDate } from '../utils/date'
+import { formatTurkishMobileInput, getTurkishMobileDigits, isValidTurkishMobileNumber } from '../utils/phone'
 
-const services = [
-  { name: 'Sac, Sakal Kesimi ve Yikama', price: '500 TL', time: '55 dk' },
-  { name: 'Sac kesimi', price: '350 TL', time: '35 dk' },
-  { name: 'Sakal tirasi', price: '200 TL', time: '20 dk' },
-  { name: 'Cocuk kesimi', price: '250 TL', time: '25 dk' },
-  { name: 'Damat bakimi', price: '900 TL', time: '75 dk' },
+const defaultServices = [
+  { id: 'sac-sakal-yikama', name: 'Sac, Sakal Kesimi ve Yikama', price: '500 TL', time: '55 dk' },
+  { id: 'sac-kesimi', name: 'Sac kesimi', price: '350 TL', time: '35 dk' },
+  { id: 'sakal-tirasi', name: 'Sakal tirasi', price: '200 TL', time: '20 dk' },
+  { id: 'cocuk-kesimi', name: 'Cocuk kesimi', price: '250 TL', time: '25 dk' },
+  { id: 'damat-bakimi', name: 'Damat bakimi', price: '900 TL', time: '75 dk' },
 ]
+
+const apiBaseUrl = import.meta.env.VITE_API_URL || ''
 
 const timeSlots = [
   '10:00',
@@ -35,6 +39,9 @@ const timeSlots = [
   '20:30',
 ]
 
+const serviceSkeletonItems = [0, 1, 2, 3, 4]
+const dateSkeletonItems = [0, 1, 2, 3, 4, 5, 6]
+
 const pageReveal = {
   initial: { opacity: 0, y: 30 },
   animate: { opacity: 1, y: 0 },
@@ -50,41 +57,230 @@ function getDateOptions() {
     date.setDate(date.getDate() + index)
 
     return {
-      value: date.toISOString().split('T')[0],
+      value: formatLocalDate(date),
       weekday: index === 0 ? 'Bugun' : weekdayFormatter.format(date),
       day: date.getDate(),
       month: monthFormatter.format(date),
+      isSunday: date.getDay() === 0,
     }
   })
 }
 
 function Randevu() {
+  const [services, setServices] = useState(defaultServices)
+  const [isServicesLoading, setIsServicesLoading] = useState(true)
   const [step, setStep] = useState(1)
-  const [selectedService, setSelectedService] = useState(services[0])
+  const [selectedService, setSelectedService] = useState(defaultServices[0])
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedTime, setSelectedTime] = useState('')
+  const [bookedTimes, setBookedTimes] = useState([])
+  const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(false)
+  const [closedDays, setClosedDays] = useState([])
+  const [isClosedDaysLoading, setIsClosedDaysLoading] = useState(true)
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
   const [customerNote, setCustomerNote] = useState('')
   const [isKvkkAccepted, setIsKvkkAccepted] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
+  const [createdAppointment, setCreatedAppointment] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [appointmentError, setAppointmentError] = useState('')
   const dateOptions = useMemo(() => getDateOptions(), [])
-  const isReadyToConfirm = selectedService && selectedDate && selectedTime
-  const selectedDateInfo = dateOptions.find((date) => date.value === selectedDate)
+  const closedDayValues = useMemo(() => new Set(closedDays.map((day) => day.date)), [closedDays])
+  const visibleDateOptions = useMemo(
+    () => dateOptions.map((date) => ({ ...date, isClosed: date.isSunday || closedDayValues.has(date.value) })),
+    [closedDayValues, dateOptions],
+  )
+  const isSelectedDateAvailable = visibleDateOptions.some((date) => date.value === selectedDate && !date.isClosed)
+  const isReadyToConfirm = selectedService && selectedDate && selectedTime && isSelectedDateAvailable
+  const selectedDateInfo = visibleDateOptions.find((date) => date.value === selectedDate)
   const selectedDateLabel = selectedDateInfo
     ? `${selectedDateInfo.weekday} ${selectedDateInfo.day} ${selectedDateInfo.month}`
     : ''
-  const isCustomerReady = customerName.trim() && customerPhone.trim()
+  const customerPhoneDigits = useMemo(() => getTurkishMobileDigits(customerPhone), [customerPhone])
+  const isCustomerPhoneValid = isValidTurkishMobileNumber(customerPhone)
+  const isCustomerReady = customerName.trim() && isCustomerPhoneValid
   const canContinue =
     (step === 1 && selectedService) ||
-    (step === 2 && selectedDate) ||
+    (step === 2 && selectedDate && isSelectedDateAvailable) ||
     (step === 3 && selectedTime) ||
     (step === 4 && isReadyToConfirm)
+
+  useEffect(() => {
+    let isMounted = true
+
+    setIsServicesLoading(true)
+
+    fetch(`${apiBaseUrl}/api/services`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Hizmetler alinamadi.')
+        }
+
+        return response.json()
+      })
+      .then((data) => {
+        if (!isMounted || !Array.isArray(data.services) || data.services.length === 0) {
+          return
+        }
+
+        setServices(data.services)
+        setSelectedService((current) => data.services.find((service) => service.id === current.id) || data.services[0])
+      })
+      .catch(() => {
+        if (isMounted) {
+          setServices(defaultServices)
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsServicesLoading(false)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+
+    setIsClosedDaysLoading(true)
+
+    fetch(`${apiBaseUrl}/api/closed-days`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Kapali gunler alinamadi.')
+        }
+
+        return response.json()
+      })
+      .then((data) => {
+        if (!isMounted || !Array.isArray(data.closedDays)) {
+          return
+        }
+
+        setClosedDays(data.closedDays)
+      })
+      .catch(() => {
+        if (isMounted) {
+          setClosedDays([])
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsClosedDaysLoading(false)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (selectedDate && !isSelectedDateAvailable) {
+      setSelectedDate('')
+      setSelectedTime('')
+    }
+  }, [isSelectedDateAvailable, selectedDate])
+
+  useEffect(() => {
+    if (!selectedDate) {
+      setBookedTimes([])
+      setIsAvailabilityLoading(false)
+      return undefined
+    }
+
+    let isMounted = true
+
+    setIsAvailabilityLoading(true)
+
+    fetch(`${apiBaseUrl}/api/availability?date=${selectedDate}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Musaitlik alinamadi.')
+        }
+
+        return response.json()
+      })
+      .then((data) => {
+        if (!isMounted || !Array.isArray(data.slots)) {
+          return
+        }
+
+        const nextBookedTimes = data.slots.filter((slot) => slot.isBooked).map((slot) => slot.time)
+        setBookedTimes(nextBookedTimes)
+        setSelectedTime((current) => (nextBookedTimes.includes(current) ? '' : current))
+      })
+      .catch(() => {
+        if (isMounted) {
+          setBookedTimes([])
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsAvailabilityLoading(false)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [selectedDate])
+
+  const createAppointment = async () => {
+    if (!isCustomerPhoneValid) {
+      setAppointmentError('Telefon numarasi 5xx xxx xx xx formatinda olmali.')
+      return
+    }
+
+    setIsSubmitting(true)
+    setAppointmentError('')
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/appointments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          serviceId: selectedService.id,
+          date: selectedDate,
+          time: selectedTime,
+          customerName,
+          customerPhone: customerPhoneDigits,
+          customerNote,
+        }),
+      })
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Randevu olusturulamadi.')
+      }
+
+      setCreatedAppointment(data.appointment)
+      setBookedTimes((current) => [...new Set([...current, selectedTime])])
+      setIsCompleted(true)
+      setStep(6)
+    } catch (error) {
+      setAppointmentError(error.message)
+
+      if (error.message.includes('dolu')) {
+        setBookedTimes((current) => [...new Set([...current, selectedTime])])
+        setSelectedTime('')
+        setStep(3)
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <main className="appointment-page">
       <motion.section className="appointment-shell" {...pageReveal}>
-        <span className="appointment-brand">Muhammed Barbers</span>
+        <span className="appointment-brand">Muhammed Barber</span>
         <h1>Randevu Al</h1>
         <p>Hizmetini sec, tarihini ve saatini belirle. Koltugun hazir olsun.</p>
 
@@ -117,24 +313,34 @@ function Randevu() {
               >
                 <h2>Islem Secin</h2>
                 <div className="appointment-services">
-                  {services.map((service) => (
-                    <button
-                      className={`appointment-service ${selectedService.name === service.name ? 'is-selected' : ''}`}
-                      type="button"
-                      key={service.name}
-                      onClick={() => {
-                        setSelectedService(service)
-                        setSelectedDate('')
-                        setSelectedTime('')
-                      }}
-                    >
-                      <div>
-                        <strong>{service.name}</strong>
-                        <span>{service.time}</span>
-                      </div>
-                      <b>{service.price}</b>
-                    </button>
-                  ))}
+                  {isServicesLoading
+                    ? serviceSkeletonItems.map((item) => (
+                        <div className="appointment-service appointment-service-skeleton" key={item}>
+                          <div>
+                            <i className="appointment-skeleton appointment-skeleton-title" />
+                            <i className="appointment-skeleton appointment-skeleton-text" />
+                          </div>
+                          <i className="appointment-skeleton appointment-skeleton-price" />
+                        </div>
+                      ))
+                    : services.map((service) => (
+                        <button
+                          className={`appointment-service ${selectedService.name === service.name ? 'is-selected' : ''}`}
+                          type="button"
+                          key={service.name}
+                          onClick={() => {
+                            setSelectedService(service)
+                            setSelectedDate('')
+                            setSelectedTime('')
+                          }}
+                        >
+                          <div>
+                            <strong>{service.name}</strong>
+                            <span>{service.time}</span>
+                          </div>
+                          <b>{service.price}</b>
+                        </button>
+                      ))}
                 </div>
               </motion.div>
             )}
@@ -150,21 +356,29 @@ function Randevu() {
               >
                 <h2>Tarih Secin</h2>
                 <div className="date-grid">
-                  {dateOptions.map((date) => (
-                    <button
-                      className={selectedDate === date.value ? 'is-selected' : ''}
-                      type="button"
-                      key={date.value}
-                      onClick={() => {
-                        setSelectedDate(date.value)
-                        setSelectedTime('')
-                      }}
-                    >
-                      <span>{date.weekday}</span>
-                      <strong>{date.day}</strong>
-                      <i>{date.month}</i>
-                    </button>
-                  ))}
+                  {isClosedDaysLoading
+                    ? dateSkeletonItems.map((item) => (
+                        <i className="appointment-skeleton appointment-date-skeleton" key={item} />
+                      ))
+                    : visibleDateOptions.map((date) => (
+                        <button
+                          className={`${selectedDate === date.value ? 'is-selected' : ''} ${
+                            date.isClosed ? 'is-closed' : ''
+                          }`}
+                          type="button"
+                          disabled={date.isClosed}
+                          key={date.value}
+                          onClick={() => {
+                            setSelectedDate(date.value)
+                            setSelectedTime('')
+                          }}
+                        >
+                          <span>{date.weekday}</span>
+                          <strong>{date.day}</strong>
+                          <i>{date.month}</i>
+                          {date.isClosed && <b aria-hidden="true">-</b>}
+                        </button>
+                      ))}
                 </div>
               </motion.div>
             )}
@@ -180,16 +394,22 @@ function Randevu() {
               >
                 <h2>Saat Secin</h2>
                 <div className="time-grid">
-                  {timeSlots.map((time) => (
-                    <button
-                      className={selectedTime === time ? 'is-selected' : ''}
-                      type="button"
-                      key={time}
-                      onClick={() => setSelectedTime(time)}
-                    >
-                      {time}
-                    </button>
-                  ))}
+                  {isAvailabilityLoading
+                    ? timeSlots.map((time) => <i className="appointment-skeleton appointment-time-skeleton" key={time} />)
+                    : timeSlots.map((time) => (
+                        <button
+                          className={`${selectedTime === time ? 'is-selected' : ''} ${
+                            bookedTimes.includes(time) ? 'is-booked' : ''
+                          }`}
+                          type="button"
+                          disabled={bookedTimes.includes(time)}
+                          key={time}
+                          onClick={() => setSelectedTime(time)}
+                        >
+                          <span>{time}</span>
+                          {bookedTimes.includes(time) && <i>-</i>}
+                        </button>
+                      ))}
                 </div>
               </motion.div>
             )}
@@ -249,17 +469,24 @@ function Randevu() {
                     />
                   </label>
                   <label>
-                    <span>Telefon Numarasi</span>
+                    <span>Telefon Numarasi / Numara ID</span>
                     <div className="phone-input">
                       <button type="button">TR +90</button>
                       <input
                         type="tel"
                         value={customerPhone}
-                        onChange={(event) => setCustomerPhone(event.target.value)}
+                        onChange={(event) => setCustomerPhone(formatTurkishMobileInput(event.target.value))}
                         placeholder="5xx xxx xx xx"
+                        inputMode="numeric"
+                        pattern="5[0-9]{2} [0-9]{3} [0-9]{2} [0-9]{2}"
+                        title="5xx xxx xx xx formatinda girin"
+                        aria-invalid={customerPhone ? !isCustomerPhoneValid : undefined}
                         required
                       />
                     </div>
+                    <small className={`phone-format-hint ${customerPhone && !isCustomerPhoneValid ? 'is-invalid' : ''}`}>
+                      5xx xxx xx xx formatinda olmalidir.
+                    </small>
                   </label>
                   <label>
                     <span>Not (Opsiyonel)</span>
@@ -299,12 +526,20 @@ function Randevu() {
                 <span>Tamamlandi</span>
                 <h2>Randevun Alindi</h2>
                 <p>
-                  {customerName}, {selectedDateLabel} tarihinde saat {selectedTime} icin
+                  {createdAppointment?.customerName || customerName}, {selectedDateLabel} tarihinde saat {selectedTime} icin
                   randevu talebin olusturuldu.
                 </p>
+                <div className="appointment-number-id">
+                  <span>Sorgu numaran</span>
+                  <strong>
+                    {formatTurkishMobileInput(createdAppointment?.numberId || createdAppointment?.customerPhone || customerPhone)}
+                  </strong>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
+
+          {appointmentError && <p className="appointment-error">{appointmentError}</p>}
 
           {!isCompleted && (
             <div className="appointment-bottom">
@@ -331,14 +566,20 @@ function Randevu() {
                 <button
                   className="wizard-next"
                   type="button"
-                  disabled={!isReadyToConfirm || !isCustomerReady || !isKvkkAccepted}
-                  onClick={() => {
-                    setIsCompleted(true)
-                    setStep(6)
-                  }}
+                  disabled={!isReadyToConfirm || !isCustomerReady || !isKvkkAccepted || isSubmitting}
+                  onClick={createAppointment}
                 >
-                  Randevuyu Tamamla
-                  <FaChevronRight aria-hidden="true" />
+                  {isSubmitting ? (
+                    <>
+                      Tamamlaniyor
+                      <FaSpinner className="wizard-spinner" aria-hidden="true" />
+                    </>
+                  ) : (
+                    <>
+                      Randevuyu Tamamla
+                      <FaChevronRight aria-hidden="true" />
+                    </>
+                  )}
                 </button>
               )}
             </div>
