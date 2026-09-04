@@ -55,12 +55,19 @@ function PageLoader({ onComplete }) {
 function App() {
   const location = useLocation()
   const isAdminPage = location.pathname.startsWith('/admin')
-  const [hasLoaderCompleted, setHasLoaderCompleted] = useState(isAdminPage)
+  const [hasLoaderCompleted, setHasLoaderCompleted] = useState(() => {
+    if (isAdminPage) return true
+    return sessionStorage.getItem('brandLoaderShown') === 'true'
+  })
   const shouldShowLoader = !isAdminPage && !hasLoaderCompleted
+  const completeLoader = () => {
+    sessionStorage.setItem('brandLoaderShown', 'true')
+    setHasLoaderCompleted(true)
+  }
 
   return (
     <>
-      {shouldShowLoader && <PageLoader onComplete={() => setHasLoaderCompleted(true)} />}
+      {shouldShowLoader && <PageLoader onComplete={completeLoader} />}
       {!isAdminPage && <Header />}
       <Routes>
         <Route path="/" element={<Home />} />
