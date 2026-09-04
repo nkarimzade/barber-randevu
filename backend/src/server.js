@@ -357,7 +357,7 @@ async function requireAdmin(request, response) {
     return true
   }
 
-  sendJson(response, 401, { message: 'Admin yetkisi gerekli.' })
+  sendJson(response, 401, { message: 'Şifre yanlış' })
   return false
 }
 

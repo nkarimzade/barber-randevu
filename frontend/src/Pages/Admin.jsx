@@ -8,8 +8,11 @@ import {
   FaCalendarCheck,
   FaCheck,
   FaChartSimple,
+  FaCircleExclamation,
   FaCircleInfo,
   FaClock,
+  FaEye,
+  FaEyeSlash,
   FaFilePdf,
   FaFloppyDisk,
   FaLock,
@@ -112,13 +115,37 @@ const skeletonRows = [0, 1, 2, 3]
 const serviceSkeletonRows = [0, 1, 2, 3, 4]
 const chipSkeletonRows = [0, 1, 2]
 
+const SESSION_DURATION_MS = 60 * 60 * 1000 // 1 saat
+
+function getStoredAdminToken() {
+  const token = localStorage.getItem('adminToken')
+  if (!token) return ''
+
+  const loginTime = localStorage.getItem('adminLoginTime')
+  if (!loginTime) {
+    localStorage.setItem('adminLoginTime', String(Date.now()))
+    return token
+  }
+
+  const elapsed = Date.now() - Number(loginTime)
+  if (elapsed >= SESSION_DURATION_MS) {
+    localStorage.removeItem('adminToken')
+    localStorage.removeItem('adminLoginTime')
+    return ''
+  }
+
+  return token
+}
+
 function Admin() {
   const location = useLocation()
   const navigate = useNavigate()
   const currentPath = sections[location.pathname] ? location.pathname : '/admin'
   const currentSection = sections[currentPath]
   const [password, setPassword] = useState('')
-  const [token, setToken] = useState(() => localStorage.getItem('adminToken') || '')
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoginLoading, setIsLoginLoading] = useState(false)
+  const [token, setToken] = useState(getStoredAdminToken)
   const [dashboard, setDashboard] = useState({
     services: [],
     closedDays: [],
@@ -141,6 +168,26 @@ function Admin() {
   const authHeaders = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token])
   const isStatusLoading = status.endsWith('...')
 
+  // 1 saatlik oturum kontrolu
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    const checkSession = () => {
+      const loginTime = localStorage.getItem('adminLoginTime')
+      if (!loginTime || Date.now() - Number(loginTime) >= SESSION_DURATION_MS) {
+        localStorage.removeItem('adminToken')
+        localStorage.removeItem('adminLoginTime')
+        setToken('')
+        setPassword('')
+        setStatus('Oturum süreniz doldu (1 saat). Lütfen tekrar giriş yapın.')
+      }
+    }
+
+    checkSession()
+    const interval = setInterval(checkSession, 15000)
+    return () => clearInterval(interval)
+  }, [isAuthenticated])
+
   const loadDashboard = useCallback(async () => {
     if (!isAuthenticated) return
 
@@ -156,6 +203,7 @@ function Admin() {
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem('adminToken')
+          localStorage.removeItem('adminLoginTime')
           setToken('')
           throw new Error('Oturum süresi doldu veya şifre geçersiz.')
         }
@@ -184,22 +232,29 @@ function Admin() {
 
   const login = async (event) => {
     event.preventDefault()
-    if (!password) return
+    const trimmed = password.trim()
+    if (!trimmed) {
+      setStatus('Lütfen şifrenizi girin.')
+      return
+    }
 
-    setStatus('Giriş yapılıyor...')
+    setIsLoginLoading(true)
+    setStatus('')
 
     try {
       const response = await fetch(`${apiBaseUrl}/api/admin/dashboard?date=${selectedDate}`, {
-        headers: { Authorization: `Bearer ${password}` },
+        headers: { Authorization: `Bearer ${trimmed}` },
       })
-      const data = await response.json()
+      const data = await response.json().catch(() => ({}))
 
       if (!response.ok) {
-        throw new Error(data.message || 'Şifre hatalı.')
+        throw new Error('Şifre yanlış')
       }
 
-      localStorage.setItem('adminToken', password)
-      setToken(password)
+      const now = Date.now()
+      localStorage.setItem('adminToken', trimmed)
+      localStorage.setItem('adminLoginTime', String(now))
+      setToken(trimmed)
       setDashboard({
         ...data,
         services: data.services || [],
@@ -210,14 +265,28 @@ function Admin() {
       })
       setStatus('')
     } catch (error) {
-      setStatus(error.message)
+      if (
+        error.message === 'Şifre yanlış' ||
+        error.message.includes('Admin yetkisi') ||
+        error.message.includes('yetki') ||
+        error.message.includes('geçersiz') ||
+        error.message.includes('hatalı')
+      ) {
+        setStatus('Şifre yanlış')
+      } else {
+        setStatus(error.message || 'Şifre yanlış')
+      }
+    } finally {
+      setIsLoginLoading(false)
     }
   }
 
   const logout = () => {
     localStorage.removeItem('adminToken')
+    localStorage.removeItem('adminLoginTime')
     setToken('')
     setPassword('')
+    setStatus('')
     navigate('/admin')
   }
 
@@ -525,26 +594,74 @@ function Admin() {
   }
 
   if (!isAuthenticated) {
+    const isError = status === 'Şifre yanlış' || status.includes('şifre') || status.includes('Şifre')
+    const isSessionExpired = status.includes('Oturum süreniz doldu')
+
     return (
       <main className="admin-login-page">
         <form className="admin-login-card" onSubmit={login}>
-          <img className="admin-brand-logo" src="/logo.png" alt="Muhammed Barber logo" />
-          <span>Admin Panel</span>
-          <h1>Muhammed Barber</h1>
-          <label>
-            Sifre
-            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoFocus />
-          </label>
-          <button type="submit">
+          <div className="admin-login-header">
+            <div className="admin-login-logo-wrap">
+              <img className="admin-login-logo" src="/logo.png" alt="Muhammed Barber logo" />
+            </div>
+            <span className="admin-login-badge">Yönetici Girişi</span>
+            <h1>Muhammed Barber</h1>
+            <p>Admin paneline erişmek için şifrenizi giriniz.</p>
+          </div>
+
+          <div className="admin-login-field">
+            <label htmlFor="admin-password-input">Şifre</label>
+            <div className="admin-login-input-wrap">
+              <input
+                id="admin-password-input"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(event) => {
+                  setPassword(event.target.value)
+                  if (status === 'Şifre yanlış') {
+                    setStatus('')
+                  }
+                }}
+                placeholder="Yönetici şifreniz"
+                autoFocus
+                required
+              />
+              <button
+                type="button"
+                className="admin-login-eye-btn"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
+                tabIndex={-1}
+              >
+                {showPassword ? <FaEyeSlash aria-hidden="true" /> : <FaEye aria-hidden="true" />}
+              </button>
+            </div>
+          </div>
+
+          <button className="admin-login-submit" type="submit" disabled={isLoginLoading}>
             <FaLock aria-hidden="true" />
-            Giris Yap
+            {isLoginLoading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
           </button>
-          {status && !isStatusLoading && (
-            <p className="admin-status">
-              <FaCircleInfo aria-hidden="true" />
-              {status}
-            </p>
+
+          {status && (
+            <div
+              className={`admin-login-alert ${isError ? 'is-error' : ''} ${isSessionExpired ? 'is-warning' : ''}`}
+              role="alert"
+            >
+              {isError ? (
+                <FaCircleExclamation aria-hidden="true" />
+              ) : isSessionExpired ? (
+                <FaClock aria-hidden="true" />
+              ) : (
+                <FaCircleInfo aria-hidden="true" />
+              )}
+              <span>{status}</span>
+            </div>
           )}
+
+          <div className="admin-login-footer">
+            <span>⏱️ Güvenlik gereği oturum süresi 1 saattir.</span>
+          </div>
         </form>
       </main>
     )
