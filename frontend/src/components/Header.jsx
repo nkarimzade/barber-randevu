@@ -4,7 +4,12 @@ import { IoCloseOutline } from 'react-icons/io5'
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const menuLinks = ['Hakkimizda', 'Hizmetler', 'Galeri', 'Iletisim']
+  const menuLinks = [
+    { label: 'Hakkimizda', href: '/#next-section' },
+    { label: 'Hizmetler', href: '/#randevu-al' },
+    { label: 'Galeri', href: '/#galeri' },
+    { label: 'Iletisim', href: '/#iletisim' },
+  ]
 
   useEffect(() => {
     if (!isMenuOpen) {
@@ -64,8 +69,8 @@ function Header() {
 
           <div className="header-menu-links">
             {menuLinks.map((link) => (
-              <a key={link} href={`/${link.toLowerCase()}`}>
-                {link}
+              <a key={link.label} href={link.href} onClick={() => setIsMenuOpen(false)}>
+                {link.label}
               </a>
             ))}
           </div>
@@ -74,11 +79,9 @@ function Header() {
             <div className="menu-footer-links">
               <a href="/">Ana Sayfa</a>
               <span>-</span>
-              <a href="/ekibimiz">Ekibimiz</a>
+              <a href="/randevu">Randevu Al</a>
               <span>-</span>
-              <a href="/yorumlar">Yorumlar</a>
-              <span>-</span>
-              <a href="/iletisim">Iletisim</a>
+              <a href="/randevu-sorgula">Randevu Sorgula</a>
             </div>
             <div className="menu-contact">
               <span>+90 536 415 97 42</span>

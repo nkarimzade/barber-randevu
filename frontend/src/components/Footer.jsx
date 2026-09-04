@@ -6,7 +6,6 @@ const footerLinks = [
     links: [
       { label: 'Hakkimizda', href: '#next-section' },
       { label: 'Galeri', href: '#galeri' },
-      { label: 'Yorumlar', href: '#yorumlar' },
       { label: 'Randevu Al', href: '/randevu' },
     ],
   },
