@@ -8,7 +8,7 @@ function Header() {
     { label: 'Hakkimizda', href: '/#next-section' },
     { label: 'Hizmetler', href: '/#randevu-al' },
     { label: 'Galeri', href: '/#galeri' },
-    { label: 'Iletisim', href: '/#iletisim' },
+    { label: 'İletişim', href: '/#iletisim' },
   ]
 
   useEffect(() => {

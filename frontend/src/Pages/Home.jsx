@@ -15,25 +15,25 @@ const revealProps = {
 }
 
 const images = [
-  { src: '/galery/1.jpg', alt: 'Muhammed Barber sac kesimi' },
-  { src: '/galery/2.jfif', alt: 'Muhammed Barber sakal tirasi' },
-  { src: '/galery/3.jfif', alt: 'Muhammed Barber salon detayi' },
-  { src: '/galery/4.jfif', alt: 'Cankiri Merkez berber hizmeti' },
-  { src: '/galery/5.jfif', alt: 'Modern erkek kuaforu' },
-  { src: '/galery/6.jfif', alt: 'Profesyonel berber isciligi' },
-  { src: '/galery/7.jfif', alt: 'Cankiri Merkez berber hizmeti' },
-  { src: '/galery/8.jfif', alt: 'Modern erkek kuaforu' },
-  { src: '/galery/6.jfif', alt: 'Profesyonel berber isciligi' },
+  { src: '/galery/1.jpg', alt: 'Muhammed Barber saç kesimi' },
+  { src: '/galery/2.jfif', alt: 'Muhammed Barber sakal tıraşı' },
+  { src: '/galery/3.jfif', alt: 'Muhammed Barber salon detayı' },
+  { src: '/galery/4.jfif', alt: 'Çankırı Merkez berber hizmeti' },
+  { src: '/galery/5.jfif', alt: 'Çankırı modern erkek kuaförü' },
+  { src: '/galery/6.jfif', alt: 'Profesyonel berber işçiliği' },
+  { src: '/galery/7.jfif', alt: 'Çankırı Merkez berber hizmeti' },
+  { src: '/galery/8.jfif', alt: 'Çankırı erkek kuaförü' },
+  { src: '/galery/6.jfif', alt: 'Profesyonel berber işçiliği' },
 ]
 
 const reviews = [
   {
     name: 'Emir K.',
-    text: 'Sac kesimi de sakal da tam istedigim gibi oldu. Koltuktan kalkinca farki direkt hissediyorsun.',
+    text: 'Saç kesimi de sakal da tam istediğim gibi oldu. Koltuktan kalkınca farkı direkt hissediyorsun.',
   },
   {
     name: 'Burak A.',
-    text: 'Cankiri Merkezde gittigim en temiz ve en rahat berber deneyimlerinden biri.',
+    text: "Çankırı Merkez'de gittiğim en temiz ve en rahat berber deneyimlerinden biri.",
   },
   {
     name: 'Mert Y.',
@@ -57,7 +57,7 @@ const reviews = [
   },
   {
     name: 'Kadir E.',
-    text: 'Cankirida modern berber deneyimi arayanlara rahatlikla oneririm.',
+    text: "Çankırı'da modern berber deneyimi arayanlara rahatlıkla öneririm.",
   },
   {
     name: 'Furkan G.',
@@ -78,11 +78,11 @@ const reviews = [
 ]
 const reviewRows = [reviews.slice(0, 6), reviews.slice(6)]
 const defaultServices = [
-  { id: 'sac-kesimi', name: 'Sac kesimi', price: '350 TL', detail: 'Klasik, modern ve fade kesim' },
-  { id: 'sakal-tirasi', name: 'Sakal tirasi', price: '200 TL', detail: 'Hat belirleme ve sicak havlu' },
-  { id: 'sac-sakal-yikama', name: 'Sac + sakal', price: '500 TL', detail: 'Tam bakim paketi' },
-  { id: 'cocuk-kesimi', name: 'Cocuk kesimi', price: '250 TL', detail: 'Rahat ve hizli kesim' },
-  { id: 'damat-bakimi', name: 'Damat bakimi', price: '900 TL', detail: 'Ozel gun hazirligi' },
+  { id: 'sac-kesimi', name: 'Saç kesimi', price: '350 TL', detail: 'Klasik, modern ve fade kesim' },
+  { id: 'sakal-tirasi', name: 'Sakal tıraşı', price: '200 TL', detail: 'Hat belirleme ve sıcak havlu' },
+  { id: 'sac-sakal-yikama', name: 'Saç + sakal', price: '500 TL', detail: 'Tam bakım paketi' },
+  { id: 'cocuk-kesimi', name: 'Çocuk kesimi', price: '250 TL', detail: 'Rahat ve hızlı kesim' },
+  { id: 'damat-bakimi', name: 'Damat bakımı', price: '900 TL', detail: 'Özel gün hazırlığı' },
 ]
 const services = defaultServices
 
@@ -94,8 +94,8 @@ const faqs = [
     answer: 'Randevu almanizi oneririz. Musaitlik varsa randevusuz da yardimci oluruz.',
   },
   {
-    question: 'Sac sakal islemi ne kadar surer?',
-    answer: 'Sac ve sakal bakimi ortalama 50-60 dakika surer. Secilen modele gore sure degisebilir.',
+    question: 'Saç sakal işlemi ne kadar sürer?',
+    answer: 'Saç ve sakal bakımı ortalama 50-60 dakika sürer. Seçilen modele göre süre değişebilir.',
   },
   {
     question: 'Odeme nasil yapiliyor?',
@@ -271,15 +271,15 @@ function Home() {
           </motion.span>
         </h1>
         <div className="seo-content">
-          <h2>Muhammed Barber Cankiri Merkez Berber</h2>
+          <h2>Muhammed Barber Çankırı Merkez Berber</h2>
           <p>
-            Muhammed Barber, Cankiri Merkez'de erkek sac kesimi, sakal tirasi,
-            sac sekillendirme ve profesyonel berber hizmetleri sunar.
+            Muhammed Barber, Çankırı Merkez'de erkek saç kesimi, sakal tıraşı,
+            saç şekillendirme, fade kesim, damat bakımı ve online berber randevusu hizmetleri sunar.
           </p>
         </div>
         <picture>
           <source media="(min-width: 641px)" srcSet={heroImageDesktop} />
-          <img className="hero-image" src={heroImageMobile} alt="Berber salonu" />
+          <img className="hero-image" src={heroImageMobile} alt="Muhammed Barber Çankırı Merkez berber salonu" />
         </picture>
 
         <motion.div
@@ -289,8 +289,8 @@ function Home() {
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 1.25, delay: 0.85, ease: [0.22, 1, 0.36, 1] }}
         >
-          <a className="scroll-down-link" href="#next-section" aria-label="Asagi kaydir">
-            <span>Asagi</span>
+          <a className="scroll-down-link" href="#next-section" aria-label="Aşağı kaydır">
+            <span>Aşağı</span>
             <i />
           </a>
 
@@ -324,7 +324,7 @@ function Home() {
       <section className="about-section" id="next-section">
         <div className="about-content">
           <motion.div className="about-copy" {...revealProps}>
-            <span className="section-kicker">Cankiri Merkez</span>
+            <span className="section-kicker">Çankırı Merkez</span>
             <h2>Muhammed Barber</h2>
             <p>
               Modern erkek bakimini guclu stil, temiz iscilik ve rahat bir salon
@@ -587,7 +587,7 @@ function Home() {
               />
               <span>
                 <a href="/kvkk" target="_blank" rel="noreferrer">
-                  KVKK Aydinlatma Metni
+                  KVKK Aydınlatma Metni
                 </a>
                 'ni okudum; bilgilerimin iletisim amaciyla islenmesini onayliyorum.
               </span>
@@ -595,7 +595,7 @@ function Home() {
 
             <button type="submit">
               <FaPhoneAlt aria-hidden="true" />
-              Gonder
+              Gönder
             </button>
           </motion.form>
 
@@ -618,7 +618,7 @@ function Home() {
               target="_blank"
               rel="noreferrer"
             >
-              Cankiri icin Berberler
+              Çankırı için berberler
             </a>
             <iframe
               src="https://yandex.com.tr/map-widget/v1/org/demirbas_erkek_kuaforu/98280357783/?ll=33.617347%2C40.598715&z=17"

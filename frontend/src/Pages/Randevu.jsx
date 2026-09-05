@@ -5,11 +5,11 @@ import { formatLocalDate } from '../utils/date'
 import { formatTurkishMobileInput, getTurkishMobileDigits, isValidTurkishMobileNumber } from '../utils/phone'
 
 const defaultServices = [
-  { id: 'sac-sakal-yikama', name: 'Sac, Sakal Kesimi ve Yikama', price: '500 TL', time: '55 dk' },
-  { id: 'sac-kesimi', name: 'Sac kesimi', price: '350 TL', time: '35 dk' },
-  { id: 'sakal-tirasi', name: 'Sakal tirasi', price: '200 TL', time: '20 dk' },
-  { id: 'cocuk-kesimi', name: 'Cocuk kesimi', price: '250 TL', time: '25 dk' },
-  { id: 'damat-bakimi', name: 'Damat bakimi', price: '900 TL', time: '75 dk' },
+  { id: 'sac-sakal-yikama', name: 'Saç, Sakal Kesimi ve Yıkama', price: '500 TL', time: '55 dk' },
+  { id: 'sac-kesimi', name: 'Saç kesimi', price: '350 TL', time: '35 dk' },
+  { id: 'sakal-tirasi', name: 'Sakal tıraşı', price: '200 TL', time: '20 dk' },
+  { id: 'cocuk-kesimi', name: 'Çocuk kesimi', price: '250 TL', time: '25 dk' },
+  { id: 'damat-bakimi', name: 'Damat bakımı', price: '900 TL', time: '75 dk' },
 ]
 
 const apiBaseUrl = import.meta.env.VITE_API_URL || ''
@@ -301,7 +301,7 @@ function Randevu() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || 'Randevu olusturulamadi.')
+        throw new Error(data.message || 'Randevu oluşturulamadı.')
       }
 
       setCreatedAppointment(data.appointment)
@@ -330,7 +330,7 @@ function Randevu() {
 
         <button className="selected-service-bar" type="button" onClick={() => setStep(1)}>
           <div>
-            <span>Secimleriniz</span>
+            <span>Seçimleriniz</span>
             <strong>
               {selectedService.name} - {selectedService.price} - {selectedService.time}
             </strong>
@@ -355,7 +355,7 @@ function Randevu() {
                 exit={{ opacity: 0, x: -28 }}
                 transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
               >
-                <h2>Islem Secin</h2>
+                <h2>İşlem Seçin</h2>
                 <div className="appointment-services">
                   {isServicesLoading
                     ? serviceSkeletonItems.map((item) => (
@@ -398,7 +398,7 @@ function Randevu() {
                 exit={{ opacity: 0, x: -28 }}
                 transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
               >
-                <h2>Tarih Secin</h2>
+                <h2>Tarih Seçin</h2>
                 <div className="date-grid">
                   {isClosedDaysLoading
                     ? dateSkeletonItems.map((item) => (
@@ -436,7 +436,7 @@ function Randevu() {
                 exit={{ opacity: 0, x: -28 }}
                 transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
               >
-                <h2>Saat Secin</h2>
+                <h2>Saat Seçin</h2>
                 <div className="time-grid">
                   {isAvailabilityLoading
                     ? timeSlots.map((time) => <i className="appointment-skeleton appointment-time-skeleton" key={time} />)
@@ -470,10 +470,10 @@ function Randevu() {
                 exit={{ opacity: 0, x: -28 }}
                 transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
               >
-                <h2>Secimlerin</h2>
+                <h2>Seçimlerin</h2>
                 <div className="appointment-review-list">
                   <div>
-                    <span>Islem</span>
+                    <span>İşlem</span>
                     <strong>{selectedService.name}</strong>
                   </div>
                   <div>
@@ -552,7 +552,7 @@ function Randevu() {
                     />
                     <span>
                       <a href="/kvkk" target="_blank" rel="noreferrer">
-                        KVKK Aydinlatma Metni
+                        KVKK Aydınlatma Metni
                       </a>
                       ni okudum; bilgilerimin randevu amaciyla islenmesini onayliyorum.
                     </span>
@@ -574,7 +574,7 @@ function Randevu() {
                 <h2>Randevun Alindi</h2>
                 <p>
                   {createdAppointment?.customerName || customerName}, {selectedDateLabel} tarihinde saat {selectedTime} icin
-                  randevu talebin olusturuldu.
+                  randevu talebin oluşturuldu.
                 </p>
                 <div className="appointment-number-id">
                   <span>Sorgu numaran</span>

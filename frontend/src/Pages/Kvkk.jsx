@@ -3,16 +3,16 @@ function Kvkk() {
     <main className="kvkk-page">
       <section className="kvkk-content">
         <span className="section-kicker">KVKK</span>
-        <h1>Aydinlatma Metni</h1>
+        <h1>Aydınlatma Metni</h1>
         <p>
-          Muhammed Barber tarafindan randevu islemlerinin yurutulmesi amaciyla
-          ad soyad, telefon numarasi, secilen hizmet, tarih ve saat bilgileriniz
-          islenebilir.
+          Muhammed Barber tarafından randevu işlemlerinin yürütülmesi amacıyla
+          ad soyad, telefon numarası, seçilen hizmet, tarih ve saat bilgileriniz
+          işlenebilir.
         </p>
         <p>
-          Bu bilgiler yalnizca randevu olusturma, sizinle iletisime gecme ve
-          hizmet planlamasi amaciyla kullanilir. Detayli politika metni daha sonra
-          isletme bilgilerine gore genisletilebilir.
+          Bu bilgiler yalnızca randevu oluşturma, sizinle iletişime geçme ve
+          hizmet planlaması amacıyla kullanılır. Detaylı politika metni daha sonra
+          işletme bilgilerine göre genişletilebilir.
         </p>
       </section>
     </main>

@@ -12,7 +12,7 @@ const footerLinks = [
   {
     title: 'Sayfalar',
     links: [
-      { label: 'Iletisim', href: '#iletisim' },
+      { label: 'İletişim', href: '#iletisim' },
       { label: 'S.S.S', href: '#sss' },
       { label: 'KVKK', href: '/kvkk' },
       { label: 'Randevu Sorgula', href: '/randevu-sorgula' },
@@ -52,8 +52,8 @@ function Footer() {
           </div>
 
           <div className="footer-contact">
-            <span>Iletisim</span>
-            <p>Cankiri Merkez</p>
+            <span>İletişim</span>
+            <p>Çankırı Merkez</p>
             <p>Pzt-Cmt 10:00-21:00 - Paz Kapali</p>
             <a href="tel:+905364159742">+90 536 415 97 42</a>
           </div>

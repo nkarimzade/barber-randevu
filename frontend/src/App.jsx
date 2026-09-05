@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Header from './components/Header'
+import Seo from './components/Seo'
 import Home from './Pages/Home'
 import Randevu from './Pages/Randevu'
 import RandevuSorgula from './Pages/RandevuSorgula'
@@ -67,6 +68,7 @@ function App() {
 
   return (
     <>
+      <Seo pathname={location.pathname} />
       {shouldShowLoader && <PageLoader onComplete={completeLoader} />}
       {!isAdminPage && <Header />}
       <Routes>
