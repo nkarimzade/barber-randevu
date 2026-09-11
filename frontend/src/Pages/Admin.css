@@ -577,16 +577,23 @@
 }
 
 .admin-dashboard input[type='date'] {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-width: 0;
   max-width: 100%;
+  line-height: 1;
   -webkit-appearance: none;
   appearance: none;
 }
 
 .admin-dashboard input[type='date']::-webkit-date-and-time-value {
   min-width: 0;
-  text-align: left;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .admin-dashboard input[type='date']::-webkit-calendar-picker-indicator {
@@ -1137,7 +1144,6 @@
 
   .admin-toolbar-date {
     align-items: center;
-    margin-top: 16px;
   }
 
   .admin-toolbar-date input[type='date'] {
@@ -1273,7 +1279,6 @@
   .admin-card-toolbar label  { width: 100%; min-width: 0; }
   .admin-toolbar-date {
     align-items: center;
-    margin-top: 18px;
   }
   .admin-toolbar-actions { width: 100%; }
   .admin-card-toolbar button { flex: 1; min-width: 0; }
