@@ -1135,6 +1135,19 @@
     min-width: 0;
   }
 
+  .admin-toolbar-date {
+    align-items: center;
+  }
+
+  .admin-toolbar-date input[type='date'] {
+    width: min(240px, 100%);
+    text-align: center;
+  }
+
+  .admin-toolbar-date input[type='date']::-webkit-date-and-time-value {
+    text-align: center;
+  }
+
   .admin-toolbar-actions {
     width: 100%;
   }
@@ -1257,6 +1270,7 @@
   }
 
   .admin-card-toolbar label  { width: 100%; min-width: 0; }
+  .admin-toolbar-date { align-items: center; }
   .admin-toolbar-actions { width: 100%; }
   .admin-card-toolbar button { flex: 1; min-width: 0; }
 }
