@@ -195,20 +195,7 @@ function RandevuSorgula() {
                       <span>{formatAppointmentDate(appointment.date)}</span>
                       <strong>{appointment.time}</strong>
                     </div>
-                    <div className="lookup-card-tools">
-                      <small>{appointment.status === 'booked' ? 'Aktif randevu' : appointment.status}</small>
-                      {appointment.status === 'booked' && (
-                        <button
-                          type="button"
-                          className="lookup-cancel-button"
-                          onClick={() => openCancelDialog(appointment)}
-                          disabled={cancellingAppointmentId === appointment.id}
-                        >
-                          <FaXmark aria-hidden="true" />
-                          {cancellingAppointmentId === appointment.id ? 'Iptal ediliyor' : 'Iptal et'}
-                        </button>
-                      )}
-                    </div>
+                    <small>{appointment.status === 'booked' ? 'Aktif randevu' : appointment.status}</small>
                   </header>
 
                   <div className="lookup-detail-grid">
@@ -225,6 +212,20 @@ function RandevuSorgula() {
                       <span>{appointment.servicePrice}</span>
                     </div>
                   </div>
+
+                  {appointment.status === 'booked' && (
+                    <div className="lookup-actions">
+                      <button
+                        type="button"
+                        className="lookup-cancel-button"
+                        onClick={() => openCancelDialog(appointment)}
+                        disabled={cancellingAppointmentId === appointment.id}
+                      >
+                        <FaXmark aria-hidden="true" />
+                        {cancellingAppointmentId === appointment.id ? 'Iptal ediliyor' : 'Randevuyu iptal et'}
+                      </button>
+                    </div>
+                  )}
                 </article>
               ))}
             </>

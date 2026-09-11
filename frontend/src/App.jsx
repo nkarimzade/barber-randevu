@@ -9,6 +9,7 @@ import Randevu from './Pages/Randevu'
 import RandevuSorgula from './Pages/RandevuSorgula'
 import Kvkk from './Pages/Kvkk'
 import Admin from './Pages/Admin'
+import NotFound from './Pages/NotFound'
 
 const loaderWords = ['Muhammed', 'Barber']
 const loaderText = loaderWords.join(' ')
@@ -83,6 +84,7 @@ function App() {
         <Route path="/admin/fiyatlar" element={<Admin />} />
         <Route path="/admin/islem-ekle" element={<Admin />} />
         <Route path="/admin/islem-sil" element={<Admin />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   )
