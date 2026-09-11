@@ -3377,19 +3377,21 @@
   }
 
   .wizard-back {
-    flex: 0 0 76px;
-    min-height: 44px;
+    flex: 0 0 auto;
+    min-width: 68px;
+    min-height: 40px;
     padding: 0 10px;
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .wizard-next {
-    flex: 1 1 auto;
-    min-width: 0;
+    flex: 0 0 auto;
+    min-width: 132px;
+    max-width: 190px;
     gap: 7px;
-    padding: 0 12px;
-    min-height: 44px;
-    font-size: 15px;
+    padding: 0 18px;
+    min-height: 40px;
+    font-size: 14px;
   }
 
   .appointment-shell > h1 {
@@ -3438,7 +3440,8 @@
   }
 
   .appointment-bottom {
-    padding: 18px;
+    min-height: 72px;
+    padding: 14px;
   }
 
   .appointment-number-id {
