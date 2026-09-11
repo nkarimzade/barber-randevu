@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { FaCalendarDays, FaClock, FaMagnifyingGlass, FaPhone, FaScissors } from 'react-icons/fa6'
+import { FaCalendarDays, FaClock, FaMagnifyingGlass, FaPhone, FaScissors, FaXmark } from 'react-icons/fa6'
 import { formatTurkishMobileInput, getTurkishMobileDigits, isValidTurkishMobileNumber } from '../utils/phone'
 
 const apiBaseUrl = import.meta.env.VITE_API_URL || ''
@@ -25,6 +25,8 @@ function RandevuSorgula() {
   const [appointments, setAppointments] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
+  const [cancellingAppointmentId, setCancellingAppointmentId] = useState('')
   const [hasSearched, setHasSearched] = useState(false)
   const normalizedNumberId = useMemo(() => getTurkishMobileDigits(numberId), [numberId])
   const isNumberIdValid = isValidTurkishMobileNumber(numberId)
@@ -40,6 +42,7 @@ function RandevuSorgula() {
 
     setIsLoading(true)
     setError('')
+    setSuccessMessage('')
     setHasSearched(true)
 
     try {
@@ -60,6 +63,44 @@ function RandevuSorgula() {
       setError(requestError.message)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const cancelAppointment = async (appointment) => {
+    if (!appointment?.id || !lookupNumberId) {
+      setError('Randevuyu iptal etmek icin once numaranla sorgulama yap.')
+      return
+    }
+
+    const confirmed = window.confirm(`${formatAppointmentDate(appointment.date)} saat ${appointment.time} randevunu iptal etmek istiyor musun?`)
+
+    if (!confirmed) {
+      return
+    }
+
+    setCancellingAppointmentId(appointment.id)
+    setError('')
+    setSuccessMessage('')
+
+    try {
+      const response = await fetch(
+        `${apiBaseUrl}/api/appointments/${encodeURIComponent(appointment.id)}?numberId=${encodeURIComponent(getTurkishMobileDigits(lookupNumberId))}`,
+        {
+          method: 'DELETE',
+        },
+      )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Randevu iptal edilemedi.')
+      }
+
+      setAppointments((current) => current.filter((item) => item.id !== appointment.id))
+      setSuccessMessage('Randevun iptal edildi.')
+    } catch (requestError) {
+      setError(requestError.message)
+    } finally {
+      setCancellingAppointmentId('')
     }
   }
 
@@ -105,6 +146,7 @@ function RandevuSorgula() {
         </form>
 
         {error && <p className="lookup-error">{error}</p>}
+        {successMessage && <p className="lookup-success">{successMessage}</p>}
 
         <section className="lookup-results" aria-live="polite">
           {isLoading &&
@@ -156,6 +198,20 @@ function RandevuSorgula() {
                       <span>{appointment.servicePrice}</span>
                     </div>
                   </div>
+
+                  {appointment.status === 'booked' && (
+                    <div className="lookup-actions">
+                      <button
+                        type="button"
+                        className="lookup-cancel-button"
+                        onClick={() => cancelAppointment(appointment)}
+                        disabled={cancellingAppointmentId === appointment.id}
+                      >
+                        <FaXmark aria-hidden="true" />
+                        {cancellingAppointmentId === appointment.id ? 'Iptal ediliyor' : 'Randevuyu iptal et'}
+                      </button>
+                    </div>
+                  )}
                 </article>
               ))}
             </>

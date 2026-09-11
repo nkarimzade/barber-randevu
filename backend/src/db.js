@@ -326,6 +326,26 @@ export async function deleteAppointment(appointmentId) {
   return { id: snapshot.id, ...snapshot.data() }
 }
 
+export async function deleteAppointmentForNumberId(appointmentId, numberId) {
+  const ref = appointmentsCollection.doc(appointmentId)
+  const snapshot = await ref.get()
+
+  if (!snapshot.exists) {
+    return { status: 'not-found', appointment: null }
+  }
+
+  const appointment = { id: snapshot.id, ...snapshot.data() }
+  const normalizedNumberId = normalizePhone(numberId)
+  const appointmentNumberId = normalizePhone(appointment.numberId || appointment.customerPhone)
+
+  if (!normalizedNumberId || appointmentNumberId !== normalizedNumberId) {
+    return { status: 'forbidden', appointment: null }
+  }
+
+  await ref.delete()
+  return { status: 'deleted', appointment }
+}
+
 export async function getClosedDays() {
   const snapshot = await closedDaysCollection.get()
   return snapshotToArray(snapshot).sort((a, b) => a.date.localeCompare(b.date))

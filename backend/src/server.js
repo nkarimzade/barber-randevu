@@ -11,6 +11,7 @@ import {
   createAppointment,
   createService,
   deleteAppointment,
+  deleteAppointmentForNumberId,
   deleteService,
   getAppointments,
   getAppointmentsByNumberId,
@@ -457,6 +458,36 @@ async function handleRequest(request, response) {
       numberId,
       appointments: await getAppointmentsByNumberId(numberId),
     })
+    return
+  }
+
+  if (request.method === 'DELETE' && url.pathname.startsWith('/api/appointments/')) {
+    const appointmentId = decodeURIComponent(url.pathname.replace('/api/appointments/', ''))
+    const numberId = normalizePhone(url.searchParams.get('numberId') || url.searchParams.get('phone'))
+
+    if (!appointmentId) {
+      sendJson(response, 400, { message: 'Randevu ID gerekli.' })
+      return
+    }
+
+    if (!isNumberId(numberId)) {
+      sendJson(response, 400, { message: 'Telefon numarasi 5xx xxx xx xx formatinda olmali.' })
+      return
+    }
+
+    const result = await deleteAppointmentForNumberId(appointmentId, numberId)
+
+    if (result.status === 'not-found') {
+      sendJson(response, 404, { message: 'Randevu bulunamadi.' })
+      return
+    }
+
+    if (result.status === 'forbidden') {
+      sendJson(response, 403, { message: 'Bu randevuyu iptal etme yetkiniz yok.' })
+      return
+    }
+
+    sendJson(response, 200, { appointment: result.appointment })
     return
   }
 

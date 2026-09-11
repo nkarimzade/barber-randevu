@@ -2359,6 +2359,12 @@
   font-size: 13px;
 }
 
+.lookup-success {
+  margin: 14px 0 0;
+  color: #9cffc2;
+  font-size: 13px;
+}
+
 .lookup-results {
   margin-top: 24px;
   display: grid;
@@ -2458,6 +2464,39 @@
   font-size: 13px;
   line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+.lookup-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.lookup-cancel-button {
+  min-height: 44px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid rgba(255, 177, 177, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 89, 89, 0.12);
+  color: #ffd0d0;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+.lookup-cancel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lookup-cancel-button svg {
+  width: 14px;
+  height: 14px;
 }
 
 .lookup-empty {
@@ -3279,6 +3318,14 @@
 
   .lookup-detail-grid {
     grid-template-columns: 1fr;
+  }
+
+  .lookup-actions {
+    justify-content: stretch;
+  }
+
+  .lookup-cancel-button {
+    width: 100%;
   }
 
   .lookup-empty {

@@ -21,6 +21,7 @@ Create `.env` from `.env.example`, set `ADMIN_TOKEN`, then place your Firebase p
 - `GET /api/closed-days`
 - `GET /api/availability?date=YYYY-MM-DD`
 - `GET /api/appointments/lookup?numberId=PHONE`
+- `DELETE /api/appointments/:id?numberId=PHONE`
 - `POST /api/appointments`
 
 Admin endpoints require `Authorization: Bearer <ADMIN_TOKEN>`.
