@@ -2437,6 +2437,14 @@
   white-space: nowrap;
 }
 
+.lookup-card-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
 .lookup-detail-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2466,27 +2474,23 @@
   overflow-wrap: anywhere;
 }
 
-.lookup-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
 .lookup-cancel-button {
-  min-height: 44px;
-  padding: 0 16px;
+  min-height: 34px;
+  padding: 0 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
+  gap: 7px;
   border: 1px solid rgba(255, 177, 177, 0.3);
   border-radius: 8px;
   background: rgba(255, 89, 89, 0.12);
   color: #ffd0d0;
   font-family: 'Poppins', sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 900;
   letter-spacing: 0;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .lookup-cancel-button:disabled {
@@ -2495,8 +2499,111 @@
 }
 
 .lookup-cancel-button svg {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
+}
+
+.lookup-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.68);
+}
+
+.lookup-modal {
+  position: relative;
+  width: min(420px, 100%);
+  padding: 24px;
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: #111111;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+}
+
+.lookup-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+}
+
+.lookup-modal-close:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.lookup-modal > span {
+  padding-right: 42px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.lookup-modal h2 {
+  max-width: 320px;
+  margin: 0;
+  color: #ffffff;
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 42px;
+  line-height: 0.95;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.lookup-modal p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.lookup-modal-actions {
+  margin-top: 6px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.lookup-modal-actions button {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.lookup-modal-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lookup-modal-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.lookup-modal-danger {
+  border: 1px solid rgba(255, 177, 177, 0.32);
+  background: rgba(255, 89, 89, 0.14);
+  color: #ffd0d0;
 }
 
 .lookup-empty {
@@ -3312,6 +3419,12 @@
     flex-direction: column;
   }
 
+  .lookup-card-tools {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .lookup-appointment-card header strong {
     font-size: 30px;
   }
@@ -3320,12 +3433,9 @@
     grid-template-columns: 1fr;
   }
 
-  .lookup-actions {
-    justify-content: stretch;
-  }
-
   .lookup-cancel-button {
     width: 100%;
+    min-height: 44px;
   }
 
   .lookup-empty {

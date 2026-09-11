@@ -27,6 +27,7 @@ function RandevuSorgula() {
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [cancellingAppointmentId, setCancellingAppointmentId] = useState('')
+  const [pendingCancelAppointment, setPendingCancelAppointment] = useState(null)
   const [hasSearched, setHasSearched] = useState(false)
   const normalizedNumberId = useMemo(() => getTurkishMobileDigits(numberId), [numberId])
   const isNumberIdValid = isValidTurkishMobileNumber(numberId)
@@ -66,15 +67,27 @@ function RandevuSorgula() {
     }
   }
 
-  const cancelAppointment = async (appointment) => {
+  const openCancelDialog = (appointment) => {
     if (!appointment?.id || !lookupNumberId) {
       setError('Randevuyu iptal etmek icin once numaranla sorgulama yap.')
       return
     }
 
-    const confirmed = window.confirm(`${formatAppointmentDate(appointment.date)} saat ${appointment.time} randevunu iptal etmek istiyor musun?`)
+    setError('')
+    setSuccessMessage('')
+    setPendingCancelAppointment(appointment)
+  }
 
-    if (!confirmed) {
+  const closeCancelDialog = () => {
+    if (!cancellingAppointmentId) {
+      setPendingCancelAppointment(null)
+    }
+  }
+
+  const cancelAppointment = async () => {
+    const appointment = pendingCancelAppointment
+
+    if (!appointment?.id) {
       return
     }
 
@@ -97,6 +110,7 @@ function RandevuSorgula() {
 
       setAppointments((current) => current.filter((item) => item.id !== appointment.id))
       setSuccessMessage('Randevun iptal edildi.')
+      setPendingCancelAppointment(null)
     } catch (requestError) {
       setError(requestError.message)
     } finally {
@@ -181,7 +195,20 @@ function RandevuSorgula() {
                       <span>{formatAppointmentDate(appointment.date)}</span>
                       <strong>{appointment.time}</strong>
                     </div>
-                    <small>{appointment.status === 'booked' ? 'Aktif randevu' : appointment.status}</small>
+                    <div className="lookup-card-tools">
+                      <small>{appointment.status === 'booked' ? 'Aktif randevu' : appointment.status}</small>
+                      {appointment.status === 'booked' && (
+                        <button
+                          type="button"
+                          className="lookup-cancel-button"
+                          onClick={() => openCancelDialog(appointment)}
+                          disabled={cancellingAppointmentId === appointment.id}
+                        >
+                          <FaXmark aria-hidden="true" />
+                          {cancellingAppointmentId === appointment.id ? 'Iptal ediliyor' : 'Iptal et'}
+                        </button>
+                      )}
+                    </div>
                   </header>
 
                   <div className="lookup-detail-grid">
@@ -198,25 +225,47 @@ function RandevuSorgula() {
                       <span>{appointment.servicePrice}</span>
                     </div>
                   </div>
-
-                  {appointment.status === 'booked' && (
-                    <div className="lookup-actions">
-                      <button
-                        type="button"
-                        className="lookup-cancel-button"
-                        onClick={() => cancelAppointment(appointment)}
-                        disabled={cancellingAppointmentId === appointment.id}
-                      >
-                        <FaXmark aria-hidden="true" />
-                        {cancellingAppointmentId === appointment.id ? 'Iptal ediliyor' : 'Randevuyu iptal et'}
-                      </button>
-                    </div>
-                  )}
                 </article>
               ))}
             </>
           )}
         </section>
+
+        {pendingCancelAppointment && (
+          <div className="lookup-modal-backdrop" role="presentation" onClick={closeCancelDialog}>
+            <div
+              className="lookup-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="cancel-appointment-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <button
+                type="button"
+                className="lookup-modal-close"
+                onClick={closeCancelDialog}
+                aria-label="Pencereyi kapat"
+                disabled={Boolean(cancellingAppointmentId)}
+              >
+                <FaXmark aria-hidden="true" />
+              </button>
+              <span>Randevu iptali</span>
+              <h2 id="cancel-appointment-title">Randevunu iptal edelim mi?</h2>
+              <p>
+                {formatAppointmentDate(pendingCancelAppointment.date)} saat {pendingCancelAppointment.time} randevusu
+                iptal edilecek.
+              </p>
+              <div className="lookup-modal-actions">
+                <button type="button" className="lookup-modal-secondary" onClick={closeCancelDialog} disabled={Boolean(cancellingAppointmentId)}>
+                  Vazgec
+                </button>
+                <button type="button" className="lookup-modal-danger" onClick={cancelAppointment} disabled={Boolean(cancellingAppointmentId)}>
+                  {cancellingAppointmentId ? 'Iptal ediliyor' : 'Iptal et'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </motion.section>
     </main>
   )
